@@ -41,18 +41,34 @@ ext {
 
 repositories {
     mavenCentral()
+    mavenCentral()
+
     maven {
         name 'Bintray'
         url 'https://dl.bintray.com/exactpro/th2'
     }
+
     maven {
-            name 'Sonatype_snapshots'
-            url 'https://s01.oss.sonatype.org/content/repositories/snapshots/'
+        name 'Sonatype_snapshots'
+        url 'https://s01.oss.sonatype.org/content/repositories/snapshots/'
     }
+
     maven {
-            name 'Sonatype_releases'
-            url 'https://s01.oss.sonatype.org/content/repositories/releases/'
+        name 'Sonatype_releases'
+        url 'https://s01.oss.sonatype.org/content/repositories/releases/'
     }
+
+    maven {
+        name 'Artifactory release'
+        url 'http://artifactory5.exp.exactpro.com/artifactory/libs-release'
+    }
+
+    maven {
+        name 'Artifactory snapshot'
+        url 'http://artifactory5.exp.exactpro.com/artifactory/libs-snapshot'
+    }
+
+    mavenLocal()
 
     configurations.all {
         resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
