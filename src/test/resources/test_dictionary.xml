@@ -1,0 +1,211 @@
+<!--
+    Copyright 2020-2021 Exactpro (Exactpro Systems Limited)
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+<dictionary xmlns="http://exactprosystems.com/dictionary" name="testXMLDictionary">
+    <fields>
+        <field name="a" id="F_A" type="java.lang.String">
+            <attribute name="XPath">a</attribute>
+        </field>
+        <field name="b" id="F_B" type="java.lang.String">
+            <attribute name="XPath">b</attribute>
+        </field>
+        <field name="c" id="F_C" type="java.lang.String">
+            <attribute name="XPath">c</attribute>
+        </field>
+        <field name="d" id="F_D" type="java.lang.String">
+            <attribute name="XPath">d</attribute>
+        </field>
+        <field name="e" id="F_E" type="java.lang.String">
+            <attribute name="XPath">e</attribute>
+        </field>
+    </fields>
+    <messages>
+        <!--COMMON FIELD WITH COMMON FIELDS INSIDE TEST-->
+        <message name="CommonFieldsAB" id="M_AB">
+            <attribute name="XPath">ab</attribute>
+            <attribute name="Embedded" type="java.lang.Boolean">true</attribute>
+            <field name="a" reference="F_A"/>
+            <field name="b" reference="F_B"/>
+        </message>
+        <message name="CommonFieldsABC" id="M_ABC">
+            <attribute name="XPath">abc</attribute>
+            <attribute name="Embedded" type="java.lang.Boolean">true</attribute>
+            <field name="ab" reference="M_AB"/>
+            <field name="c" reference="F_C"/>
+        </message>
+        <message name="CommonFieldsA">
+            <attribute name="XmlTagName">commonFieldsA</attribute>
+            <field name="f" type="java.lang.String">
+                <attribute name="XPath">f</attribute>
+            </field>
+            <field name="abc" reference="M_ABC"/>
+        </message>
+
+        <message name="CommonFieldsBC" id="M_BC">
+            <attribute name="XPath">bc</attribute>
+            <attribute name="Embedded" type="java.lang.Boolean">true</attribute>
+            <field name="b" reference="F_B"/>
+            <field name="c" reference="F_C"/>
+        </message>
+        <message name="CommonFieldsDE" id="M_DE">
+            <attribute name="XPath">de</attribute>
+            <attribute name="Embedded" type="java.lang.Boolean">true</attribute>
+            <field name="d" reference="F_D"/>
+            <field name="e" reference="F_E"/>
+        </message>
+        <message name="CommonFieldsBCDE" id="M_BCDE">
+            <attribute name="XPath">bcde</attribute>
+            <attribute name="Embedded" type="java.lang.Boolean">true</attribute>
+            <field name="bc" reference="M_BC"/>
+            <field name="de" reference="M_DE"/>
+        </message>
+        <message name="CommonFieldsB">
+            <attribute name="XmlTagName">commonFieldsB</attribute>
+            <field name="privateFieldG" type="java.lang.String">
+                <attribute name="XPath">g</attribute>
+            </field>
+            <field name="bcde" reference="M_BCDE"/>
+        </message>
+
+        <!--COMMON FIELD GROUP TEST-->
+        <message name="WrappedGroup" id="M_WG">
+            <attribute name="XmlTagName">group</attribute>
+            <attribute name="Embedded" type="java.lang.Boolean">true</attribute>
+            <field name="a" type="java.lang.String">
+                <attribute name="XPath">a</attribute>
+            </field>
+            <field name="b" type="java.lang.String">
+                <attribute name="XPath">b</attribute>
+            </field>
+        </message>
+        <message name="NotWrappedGroup" id="M_NWG">
+            <attribute name="XmlTagName">notWrappedGroup</attribute>
+            <attribute name="Embedded" type="java.lang.Boolean">true</attribute>
+            <field name="c" type="java.lang.String">
+                <attribute name="XPath">c</attribute>
+            </field>
+            <field name="d" type="java.lang.String">
+                <attribute name="XPath">d</attribute>
+            </field>
+        </message>
+        <message name="CommonFieldsGroup">
+            <attribute name="XmlTagName">commonFieldsGroup</attribute>
+            <field name="wrapped" reference="M_WG"/>
+            <field name="notwrapped" reference="M_NWG"/>
+        </message>
+
+        <!--In the old version of codec some locations of repeating groups caused infinite recursion while decoding-->
+        <message name="M_TestAttrPartPart" id="M_TestAttrPartPart">
+            <attribute name="XPath">e</attribute>
+            <attribute name="Embedded" type="java.lang.Boolean">true</attribute>
+            <field name="F" type="java.lang.String" required="true">
+                <attribute name="XmlAttributeName">f</attribute>
+            </field>
+            <field name="G" type="java.lang.String" required="true">
+                <attribute name="XmlAttributeName">g</attribute>
+            </field>
+            <field name="n" type="java.lang.String">
+                <attribute name="XmlAttributeName">n</attribute>
+            </field>
+        </message>
+        <message name="TestAttrMessagePart" id="M_TestAttrPart" isCollection="true">
+            <attribute name="XPath">b/c/d</attribute>
+            <field name="eAttr" reference="M_TestAttrPartPart"/>
+            <field name="e" type="java.lang.String">
+                <attribute name="XPath">e</attribute>
+            </field>
+            <field name="h" type="java.lang.String">
+                <attribute name="XPath">h</attribute>
+            </field>
+        </message>
+        <message name="TestAttrMessage">
+            <field name="b" reference="M_TestAttrPart" isCollection="true"/>
+        </message>
+
+        <!--REPEATING GROUPS TEST-->
+        <message name="F_Message" id="M_F_Message" isCollection="true">
+            <attribute name="XPath">groupF</attribute>
+            <field name="H" type="java.lang.String">
+                <attribute name="XPath">G/H</attribute>
+            </field>
+        </message>
+        <message name="E_Message" id="M_E_Message" isCollection="true">
+            <attribute name="XPath">groupE</attribute>
+            <field name="F" reference="M_F_Message" isCollection="true"/>
+        </message>
+        <message name="A_Message" id="M_A_Message" isCollection="true">
+            <attribute name="XPath">groupA/B/C/D</attribute>
+            <field name="E" reference="M_E_Message" isCollection="true"/>
+        </message>
+        <message name="RepeatingGroup">
+            <attribute name="XmlTagName">repeatingGroups</attribute>
+            <field name="A" reference="M_A_Message" isCollection="true"/>
+        </message>
+
+        <!--Test for case when non-container element is repeated-->
+        <message name="SimpleRepeatingPart" id="M_SR_Part" isCollection="true">
+            <attribute name="XPath">user</attribute>
+            <field name="id" type="java.lang.String">
+                <attribute name="XmlAttributeName">id</attribute>
+            </field>
+            <field name="name" type="java.lang.String">
+                <attribute name="XPath">.</attribute>
+            </field>
+        </message>
+        <message name="SimpleRepeating">
+            <attribute name="XmlTagName">simpleRepeating</attribute>
+            <field name="user" reference="M_SR_Part" isCollection="true"/>
+        </message>
+
+
+        <!--TEST FOR ATTRIBUTES IN DIFFERENT PLACES OF MESSAGE-->
+        <message name="CommonWithAttrs" id="M_CWAttrs">
+            <attribute name="XmlTagName">commonWithAttrs</attribute>
+            <attribute name="Embedded" type="java.lang.Boolean">true</attribute>
+            <field name="commonAttrA" type="java.lang.String" required="true">
+                <attribute name="XmlAttributeName">commonAttrA</attribute>
+            </field>
+            <field name="commonAttrB" type="java.lang.String" required="true">
+                <attribute name="XmlAttributeName">commonAttrB</attribute>
+            </field>
+        </message>
+        <message name="AttributesPart" id="M_AttrsPart">
+            <attribute name="XmlTagName">withAttrs</attribute>
+            <attribute name="Embedded" type="java.lang.Boolean">true</attribute>
+            <field name="defaultFieldAttrA" type="java.lang.String" defaultvalue="456"/>
+            <field name="fieldAttrA" type="java.lang.String">
+                <attribute name="XmlAttributeName">fieldAttrA</attribute>
+            </field>
+            <field name="fieldAttrB" type="java.lang.String">
+                <attribute name="XmlAttributeName">fieldAttrB</attribute>
+            </field>
+        </message>
+        <message name="Attributes">
+            <attribute name="XmlTagName">attributes</attribute>
+            <field name="defaultMsgAttrA" type="java.lang.String" defaultvalue="123">
+                <attribute name="XmlAttributeName">defaultMsgAttrA</attribute>
+            </field>
+            <field name="msgAttrA" type="java.lang.String">
+                <attribute name="XmlAttributeName">msgAttrA</attribute>
+            </field>
+            <field name="msgAttrB" type="java.lang.String">
+                <attribute name="XmlAttributeName">msgAttrB</attribute>
+            </field>
+            <field name="commonWithAttrs" type="java.lang.String"/>
+            <field name="withAttrs" type="java.lang.String"/>
+            <field name="commonWithAttrs_attr" reference="M_CWAttrs"/>
+            <field name="withAttrs_attr" reference="M_AttrsPart"/>
+        </message>
+    </messages>
+</dictionary>

@@ -135,3 +135,7 @@ serviceLoader {
     serviceInterface 'com.exactpro.th2.codec.api.IPipelineCodecSettings'
     serviceInterface 'com.exactpro.th2.codec.api.IPipelineCodecSettingsTypeProvider'
 }
+
+test {
+    useJUnitPlatform()
+}
