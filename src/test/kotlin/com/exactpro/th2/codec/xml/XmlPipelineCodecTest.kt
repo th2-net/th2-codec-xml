@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 Exactpro (Exactpro Systems Limited)
+ * Copyright 2021-2021 Exactpro (Exactpro Systems Limited)
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -16,6 +16,7 @@ package com.exactpro.th2.codec.xml
 
 import com.exactpro.sf.common.messages.structures.IDictionaryStructure
 import com.exactpro.sf.common.messages.structures.loaders.XmlDictionaryStructureLoader
+import com.exactpro.th2.codec.CodecException
 import com.exactpro.th2.common.grpc.AnyMessage
 import com.exactpro.th2.common.grpc.Message
 import com.exactpro.th2.common.grpc.MessageGroup
@@ -29,6 +30,7 @@ import org.junit.jupiter.api.Test
 import org.opentest4j.AssertionFailedError
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
+import kotlin.test.fail
 
 class XmlPipelineCodecTest {
 
@@ -42,6 +44,21 @@ class XmlPipelineCodecTest {
         }
     }
 
+    @Test
+    fun `test wrong dictionary`() {
+        try {
+            XmlPipelineCodec().init(
+                XmlDictionaryStructureLoader().load(
+                    Thread.currentThread().contextClassLoader.getResourceAsStream(
+                        "test_wrong_dictionary.xml"
+                    )
+                )
+            )
+            fail()
+        } catch (e: CodecException) {
+            assertEquals("Have wrong dictionary structure in message with name 'TestMessage'", e.message)
+        }
+    }
 
     @Test
     fun `test common fields a`() {
@@ -236,8 +253,7 @@ class XmlPipelineCodecTest {
             "fieldAttrB", 30,
             "commonWithAttrs", "abc",
             "withAttrs", "def",
-            "defaultMsgAttrA", 123,
-            "defaultFieldAttrA", 456
+            "defaultMsgAttrA", 123
         ))
     }
 

@@ -1,6 +1,3 @@
-variables:
-  APP_NAME: th2-codec-xml
-
 include:
   - project: vivarium/th2/pipelines
     ref: v2
