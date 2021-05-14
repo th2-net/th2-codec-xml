@@ -195,28 +195,42 @@ class XmlPipelineCodecTest {
             </repeatingGroups>
         """.trimIndent(), message().addFields(
                 "A", listOf(
-                    message().addFields("E", listOf(
-                        message().addFields("F", listOf(
-                            message().addFields("H", 1)
-                        )),
-                        message().addFields("F", listOf(
-                            message().addFields("H", 2),
-                            message().addFields("H", 3)
-                        ))
-                    )),
-                    message().addFields("E", listOf(
-                        message().addFields("F", listOf(
-                            message().addFields("H", 4)
-                        )),
-                        message().addFields("F", listOf(
-                            message().addFields("H", 5)
-                        )),
-                        message().addFields("F", listOf(
-                            message().addFields("H", 6),
-                            message().addFields("H", 7),
-                            message().addFields("H", 8)
-                        ))
-                    ))
+                    message().addFields(
+                        "E", listOf(
+                            message().addFields(
+                                "F", listOf(
+                                    message().addFields("H", 1)
+                                )
+                            ),
+                            message().addFields(
+                                "F", listOf(
+                                    message().addFields("H", 2),
+                                    message().addFields("H", 3)
+                                )
+                            )
+                        )
+                    ),
+                    message().addFields(
+                        "E", listOf(
+                            message().addFields(
+                                "F", listOf(
+                                    message().addFields("H", 4)
+                                )
+                            ),
+                            message().addFields(
+                                "F", listOf(
+                                    message().addFields("H", 5)
+                                )
+                            ),
+                            message().addFields(
+                                "F", listOf(
+                                    message().addFields("H", 6),
+                                    message().addFields("H", 7),
+                                    message().addFields("H", 8)
+                                )
+                            )
+                        )
+                    )
                 )
             )
         )
@@ -224,37 +238,43 @@ class XmlPipelineCodecTest {
 
     @Test
     fun `test simple repeating`() {
-        check("""
+        check(
+            """
             <simpleRepeating>
                 <user id="1">admin</user>
                 <user id="2">user</user>
                 <user id="3">guest</user>
             </simpleRepeating>
-        """.trimIndent(), message().addFields("user", listOf(
-            message().addFields("id", 1, "name", "admin"),
-            message().addFields("id", 2, "name", "user"),
-            message().addFields("id", 3, "name", "guest")
-        )))
+        """.trimIndent(), message().addFields(
+                "user", listOf(
+                    message().addFields("id", 1, "name", "admin"),
+                    message().addFields("id", 2, "name", "user"),
+                    message().addFields("id", 3, "name", "guest")
+                )
+            )
+        )
     }
 
     @Test
     fun `test attrs in different places`() {
-        check("""
+        check(
+            """
             <attributes defaultMsgAttrA="123" msgAttrA="45" msgAttrB="67">
                 <commonWithAttrs commonAttrA="54" commonAttrB="76">abc</commonWithAttrs>
                 <withAttrs defaultFieldAttrA="456" fieldAttrA="10" fieldAttrB="30">def</withAttrs>
             </attributes>
         """.trimIndent(), message().addFields(
-            "msgAttrA", 45,
-            "msgAttrB", 67,
-            "commonAttrA", 54,
-            "commonAttrB", 76,
-            "fieldAttrA", 10,
-            "fieldAttrB", 30,
-            "commonWithAttrs", "abc",
-            "withAttrs", "def",
-            "defaultMsgAttrA", 123
-        ))
+                "msgAttrA", 45,
+                "msgAttrB", 67,
+                "commonAttrA", 54,
+                "commonAttrB", 76,
+                "fieldAttrA", 10,
+                "fieldAttrB", 30,
+                "commonWithAttrs", "abc",
+                "withAttrs", "def",
+                "defaultMsgAttrA", 123
+            )
+        )
     }
 
     private fun check(xml: String, message: Message.Builder) {

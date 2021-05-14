@@ -31,7 +31,7 @@
         </field>
     </fields>
     <messages>
-        <!--COMMON FIELD WITH COMMON FIELDS INSIDE TEST-->
+        <!--COMMON FIELD WITH INSIDE TEST FOR COMMON FIELDS-->
         <message name="CommonFieldsAB" id="M_AB">
             <attribute name="XPath">ab</attribute>
             <attribute name="Embedded" type="java.lang.Boolean">true</attribute>
@@ -105,7 +105,6 @@
             <field name="notwrapped" reference="M_NWG"/>
         </message>
 
-        <!--In the old version of codec some locations of repeating groups caused infinite recursion while decoding-->
         <message name="M_TestAttrPartPart" id="M_TestAttrPartPart">
             <attribute name="XPath">e</attribute>
             <attribute name="Embedded" type="java.lang.Boolean">true</attribute>
@@ -153,7 +152,7 @@
             <field name="A" reference="M_A_Message" isCollection="true"/>
         </message>
 
-        <!--Test for case when non-container element is repeated-->
+        <!--Test used in case when a non-container element is repeated-->
         <message name="SimpleRepeatingPart" id="M_SR_Part" isCollection="true">
             <attribute name="XPath">user</attribute>
             <field name="id" type="java.lang.String">
@@ -169,7 +168,7 @@
         </message>
 
 
-        <!--TEST FOR ATTRIBUTES IN DIFFERENT PLACES OF MESSAGE-->
+        <!--TEST FOR ATTRIBUTES IN DIFFERENT PLACES OF THE MESSAGE-->
         <message name="CommonWithAttrs" id="M_CWAttrs">
             <attribute name="XmlTagName">commonWithAttrs</attribute>
             <attribute name="Embedded" type="java.lang.Boolean">true</attribute>
