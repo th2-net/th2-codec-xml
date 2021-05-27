@@ -52,7 +52,7 @@ fun Node.addNode(name: String, document: Document) : Node = appendChild(document
 
 fun IDictionaryStructure.getCharsetName(): String? = attributes[XmlPipelineCodec.XML_CHARSET_ATTRIBUTE]?.value
 
-fun IFieldStructure.getXmlName(): String = attributes[XmlPipelineCodec.XML_TAG_NAME_ATTRIBUTE]?.value ?: name
+fun IFieldStructure.getXmlTagName(): String = attributes[XmlPipelineCodec.XML_TAG_NAME_ATTRIBUTE]?.value ?: name
 fun IFieldStructure.getXPathExpression(): String? = attributes[XmlPipelineCodec.XML_X_PATH_EXPRESSION_ATTRIBUTE]?.value
 fun IFieldStructure.getAttrName(): String? = attributes[XmlPipelineCodec.XML_ATTRIBUTE_NAME_ATTRIBUTE]?.value
 fun IFieldStructure.isValidNode(node: Node): Boolean {
@@ -69,7 +69,7 @@ fun IFieldStructure.isValidNode(node: Node): Boolean {
         }
     }
 
-    return node.nodeName == this.getXmlName()
+    return node.nodeName == this.getXmlTagName()
 }
 
 fun IMessageStructure.isEmbedded() : Boolean = attributes[XmlPipelineCodec.EMBEDDED_ATTRIBUTE]?.getCastValue() ?: false

@@ -74,7 +74,7 @@ open class XmlPipelineCodec : IPipelineCodec {
             val xmlNames = HashSet<String>()
 
             messages.forEach { (_, msgStructure) ->
-                val xmlName = msgStructure.getXmlName()
+                val xmlName = msgStructure.getXmlTagName()
                 if (!xmlNames.add(xmlName)) {
                     throw CodecException("Dictionary have messages with the same xml names = $xmlName")
                 }
@@ -94,7 +94,7 @@ open class XmlPipelineCodec : IPipelineCodec {
                 }
             }
 
-            attributes.apply {
+            with(attributes) {
                 documentTypePublic = get(XML_DOCUMENT_TYPE_PUBLIC_ATTRIBUTE)?.getCastValue()
                 documentTypeFormatStringBase =
                     get(XML_DOCUMENT_TYPE_BASE_FORMAT_STR_ATTRIBUTE)?.value?.let { createFormatString(it) }
@@ -119,17 +119,17 @@ open class XmlPipelineCodec : IPipelineCodec {
 
     private fun checkDictionaryMessage(fieldLikeNodes: MutableMap<String, Pair<String, IMessageStructure>>, fieldLikeAttrs: MutableMap<String, Pair<String, IMessageStructure>>, messageStructure: IMessageStructure) {
         messageStructure.fields.forEach { (fieldName, fieldStructure) ->
-            if (fieldStructure.isComplex && fieldStructure is IMessageStructure && fieldStructure.isEmbedded()) {
+            if (fieldStructure.isComplex && (fieldStructure as IMessageStructure).isEmbedded()) {
                 checkDictionaryMessage(fieldLikeNodes, fieldLikeAttrs, fieldStructure)
             } else {
                 val attrName = fieldStructure.getAttrName()
                 if (attrName == null) {
-                    val prevField = fieldLikeNodes.put(fieldStructure.getXmlName(), fieldName to messageStructure)
+                    val prevField = fieldLikeNodes.put(fieldStructure.getXmlTagName(), fieldName to messageStructure)
                     if (prevField != null) {
                         throw IllegalStateException("Contains field duplicates by xml nodes names. Fields: '${prevField.first}' in message with name '${prevField.second.name}' and '$fieldName' in message with name '${messageStructure.referenceName ?: messageStructure.name}'")
                     }
                 } else {
-                    val prevField = fieldLikeAttrs.put(fieldStructure.getXmlName(), fieldName to messageStructure)
+                    val prevField = fieldLikeAttrs.put(fieldStructure.getXmlTagName(), fieldName to messageStructure)
                     if (prevField != null) {
                         throw IllegalStateException("Contains field duplicates by xml nodes attributes names. Fields: '${prevField.first}' in message with name '${prevField.second.name}' and '$fieldName' in message with name '${messageStructure.referenceName ?: messageStructure.name}'")
                     }
@@ -153,22 +153,19 @@ open class XmlPipelineCodec : IPipelineCodec {
         ).build()
     }
 
-    protected fun encodeOne(message: Message): RawMessage {
+    private fun encodeOne(message: Message): RawMessage {
         val messageStructure = messagesTypes[message.messageType]
             ?: throw EncodeException("Can not encode message. Can not find message with message type '${message.messageType}'. ${message.toJson()}")
 
         return encodeOne(message, messageStructure)
     }
 
-    protected fun encodeOne(message: Message, messageStructure: IMessageStructure): RawMessage {
+    private fun encodeOne(message: Message, messageStructure: IMessageStructure): RawMessage {
 
         val document = DOCUMENT_BUILDER.get().newDocument()
-        val xmlMsgType = messageStructure.getXmlName()
+        val xmlMsgType = messageStructure.getXmlTagName()
 
-        val msgNode = xmlRootTagName.let { rootTagName ->
-            val rootTag = rootTagName?.let { name -> document.addNode(name, document) } ?: document
-            rootTag.addNode(xmlMsgType, document)
-        }
+        val msgNode = (xmlRootTagName?.let { rootTagName -> document.addNode(rootTagName, document) } ?: document).addNode(xmlMsgType, document)
 
         try {
             MessageStructureWriter.WRITER.traverse(
@@ -183,8 +180,10 @@ open class XmlPipelineCodec : IPipelineCodec {
         writeXml(document, xmlMsgType, output)
 
         return RawMessage.newBuilder().apply {
-            metadataBuilder.protocol = "XML"
+            metadataBuilder.putAllProperties(message.metadata.propertiesMap)
+            metadataBuilder.protocol = protocol
             metadataBuilder.id = message.metadata.id
+            metadataBuilder.timestamp = message.metadata.timestamp
             body = output.toByteString()
         }.build()
     }
@@ -210,7 +209,7 @@ open class XmlPipelineCodec : IPipelineCodec {
         ).build()
     }
 
-    protected fun decodeOne(rawMessage: RawMessage): List<Message> {
+    private fun decodeOne(rawMessage: RawMessage): List<Message> {
         try {
             ByteArrayInputStream(rawMessage.body.toByteArray()).use { input ->
                 val document = DOCUMENT_BUILDER.get().parse(input)
@@ -222,7 +221,7 @@ open class XmlPipelineCodec : IPipelineCodec {
                 }
 
                 return messages.flatMap { (msgType, nodes) ->
-                    val msgStructure = messagesTypes[msgType]
+                    val msgStructure: IMessageStructure = checkNotNull(messagesTypes[msgType])
                     nodes.map { xmlNode ->
                         decodeMessageNode(
                             xmlNode,
@@ -252,13 +251,13 @@ open class XmlPipelineCodec : IPipelineCodec {
         }
     }
 
-    protected fun findMessageTypes(node: Node): Map<String, List<Node>> {
+    private fun findMessageTypes(node: Node): Map<String, List<Node>> {
         if (!node.hasChildNodes()) {
             return emptyMap()
         }
 
         val rootNode =
-            if (xmlRootTagName != null && node.firstChild.nodeName == xmlRootTagName) node.firstChild else node
+            if (node.firstChild.nodeName == xmlRootTagName) node.firstChild else node
 
         val result = HashMap<String, List<Node>>()
         messagesTypes.forEach { (type, msgStructure) ->
@@ -279,26 +278,24 @@ open class XmlPipelineCodec : IPipelineCodec {
         return result
     }
 
-    protected fun decodeMessageNode(
+    private fun decodeMessageNode(
         node: Node,
         messageStructure: IMessageStructure
     ): Message.Builder {
         val msgType = messageStructure.name
         val messageBuilder = message(msgType)
-        messageBuilder.metadataBuilder.protocol = this.protocol
 
         decodeMessageFields(messageBuilder, node, messageStructure)
 
         return messageBuilder
     }
 
-    protected fun decodeMessageFields(
+    private fun decodeMessageFields(
         messageBuilder: Message.Builder,
         node: Node,
         messageStructure: IMessageStructure
     ) {
-
-        val withoutXPath = HashSet<String>()
+        val withoutXPath = HashMap<String, IFieldStructure>()
 
         messageStructure.fields.forEach { (fieldName, fieldStructure) ->
             val expression = fieldStructure.getXPathExpression()
@@ -318,12 +315,11 @@ open class XmlPipelineCodec : IPipelineCodec {
                     throw DecodeException("Can not find field with name '$fieldName' in message with message type '${messageStructure.name}'")
                 }
             } else {
-                withoutXPath.add(fieldName)
+                withoutXPath[fieldName] = fieldStructure
             }
         }
 
-        withoutXPath.forEach { fieldName ->
-            val fieldStructure = messageStructure.fields[fieldName]!!
+        withoutXPath.forEach { (fieldName, fieldStructure) ->
             val attrName = fieldStructure.getAttrName()
             val list = ArrayList<Node>()
 
@@ -349,7 +345,7 @@ open class XmlPipelineCodec : IPipelineCodec {
         }
     }
 
-    protected fun decodeFieldNode(
+    private fun decodeFieldNode(
         message: Message.Builder,
         fieldName: String,
         nodes: List<Node>,
@@ -371,7 +367,7 @@ open class XmlPipelineCodec : IPipelineCodec {
         decodeValue(message, fieldName, nodes[0], fieldStructure)
     }
 
-    protected fun decodeValue(
+    private fun decodeValue(
         message: Message.Builder,
         fieldName: String,
         node: Node,
@@ -385,7 +381,7 @@ open class XmlPipelineCodec : IPipelineCodec {
         message[fieldName] = decodeListValue(node, fieldStructure)
     }
 
-    protected fun decodeListValue(
+    private fun decodeListValue(
         node: Node,
         fieldStructure: IFieldStructure
     ): Value {
@@ -400,7 +396,7 @@ open class XmlPipelineCodec : IPipelineCodec {
         return decodeSimpleField(node, fieldStructure)
     }
 
-    protected fun decodeSimpleField(
+    private fun decodeSimpleField(
         node: Node,
         fieldStructure: IFieldStructure
     ): Value {
@@ -420,11 +416,7 @@ open class XmlPipelineCodec : IPipelineCodec {
         return value.toValue()
     }
 
-    override fun close() {
-        super.close()
-    }
-
-    protected fun writeXml(document: Document, xmlMsgType: String, outputStream: OutputStream) {
+    private fun writeXml(document: Document, xmlMsgType: String, outputStream: OutputStream) {
         try {
             val transformer: Transformer = TransformerFactory.newInstance().newTransformer()
             configureTransformer(document, xmlMsgType, transformer)
@@ -438,7 +430,7 @@ open class XmlPipelineCodec : IPipelineCodec {
         }
     }
 
-    protected fun configureTransformer(document: Document, xmlMsgType: String, transformer: Transformer) {
+    private fun configureTransformer(document: Document, xmlMsgType: String, transformer: Transformer) {
         transformer.setOutputProperty(OutputKeys.INDENT, "yes")
         transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4")
         transformer.setOutputProperty(OutputKeys.ENCODING, xmlCharset.name())
@@ -464,7 +456,7 @@ open class XmlPipelineCodec : IPipelineCodec {
         }
     }
 
-    protected fun createFormatString(str: String): String = str.replace("{}", "%1\$s")
+    private fun createFormatString(str: String): String = str.replace("{}", "%1\$s")
         .replace(FORMAT_REPLACE_REGEX) { match -> match.groupValues.firstOrNull()?.let { "%$it\$s" } ?: "" }
 
     companion object {

@@ -45,7 +45,7 @@ class XmlMessageStructureVisitor(private val document: Document, private val nod
                     error("Field node is not element. Field name = $fieldName")
                 }
             } else {
-                node.addNode(fldStruct.getXmlName(), document).setText(fieldValue, document)
+                node.addNode(fldStruct.getXmlTagName(), document).setText(fieldValue, document)
             }
         } else if (fldStruct.isRequired) {
             error("Can not find field with name = $fieldName")
@@ -65,7 +65,7 @@ class XmlMessageStructureVisitor(private val document: Document, private val nod
 
         listValue?.forEach { element ->
             element.getString()?.also { strValue ->
-                node.addNode(fldStruct.getXmlName(), document).setText(strValue, document)
+                node.addNode(fldStruct.getXmlTagName(), document).setText(strValue, document)
             }
         }
     }
@@ -79,7 +79,7 @@ class XmlMessageStructureVisitor(private val document: Document, private val nod
             MessageStructureWriter.WRITER.traverse(
                 XmlMessageStructureVisitor(
                     document,
-                    node.appendChild(document.createElement(fldStruct.getXmlName())),
+                    node.appendChild(document.createElement(fldStruct.getXmlTagName())),
                     this.message
                 ), fldStruct
             )
@@ -95,7 +95,7 @@ class XmlMessageStructureVisitor(private val document: Document, private val nod
             MessageStructureWriter.WRITER.traverse(
                 XmlMessageStructureVisitor(
                     document,
-                    node.appendChild(document.createElement(fldStruct.getXmlName())),
+                    node.appendChild(document.createElement(fldStruct.getXmlTagName())),
                     messageValue
                 ), fldStruct
             )
@@ -122,7 +122,7 @@ class XmlMessageStructureVisitor(private val document: Document, private val nod
             MessageStructureWriter.WRITER.traverse(
                 XmlMessageStructureVisitor(
                     document,
-                    node.appendChild(document.createElement(fldStruct.getXmlName())),
+                    node.appendChild(document.createElement(fldStruct.getXmlTagName())),
                     messageValue
                 ), fldStruct
             )
