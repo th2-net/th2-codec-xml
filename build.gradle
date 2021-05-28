@@ -90,11 +90,11 @@ dependencies {
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${junitVersion}"
 }
 
-applicationName = 'service'
-
-distTar {
-    archiveName "${applicationName}.tar"
+application {
+    mainClassName 'com.exactpro.th2.codec.MainKt'
 }
+
+applicationName = 'service'
 
 dockerPrepare {
     dependsOn distTar
@@ -102,6 +102,10 @@ dockerPrepare {
 
 docker {
     copySpec.from(tarTree("$buildDir/distributions/${applicationName}.tar"))
+}
+
+application {
+    mainClassName = "com.exactpro.th2.readlog.Main"
 }
 
 sourceSets {
