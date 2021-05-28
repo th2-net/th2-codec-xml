@@ -104,10 +104,6 @@ docker {
     copySpec.from(tarTree("$buildDir/distributions/${applicationName}.tar"))
 }
 
-application {
-    mainClassName = "com.exactpro.th2.readlog.Main"
-}
-
 sourceSets {
     main.kotlin.srcDirs += "src/main/kotlin"
 }
