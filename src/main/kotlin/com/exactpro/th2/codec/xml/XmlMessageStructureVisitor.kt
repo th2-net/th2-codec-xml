@@ -31,7 +31,7 @@ import org.w3c.dom.Document
 import org.w3c.dom.Element
 import org.w3c.dom.Node
 
-class XmlMessageStructureVisitor(private val document: Document, private val node: Node, private val message: Message) :
+class XmlMessageStructureVisitor(private val document: Document, private val node: Node, private val message: Message, private val onGenerateField: () -> Unit = {}) :
     DefaultMessageStructureVisitor() {
 
     override fun visit(fieldName: String, value: String?, fldStruct: IFieldStructure, isDefault: Boolean) {
@@ -41,11 +41,13 @@ class XmlMessageStructureVisitor(private val document: Document, private val nod
             if (attrName != null) {
                 if (node is Element) {
                     node.setAttribute(attrName, fieldValue)
+                    onGenerateField()
                 } else {
                     error("Field node is not element. Field name = $fieldName")
                 }
             } else {
                 node.addNode(fldStruct.getXmlTagName(), document).setText(fieldValue, document)
+                onGenerateField()
             }
         } else if (fldStruct.isRequired) {
             error("Can not find field with name = $fieldName")
@@ -66,6 +68,7 @@ class XmlMessageStructureVisitor(private val document: Document, private val nod
         listValue?.forEach { element ->
             element.getString()?.also { strValue ->
                 node.addNode(fldStruct.getXmlTagName(), document).setText(strValue, document)
+                onGenerateField()
             }
         }
     }
@@ -75,30 +78,37 @@ class XmlMessageStructureVisitor(private val document: Document, private val nod
             error("Can not find message structure for field with name = $fieldName")
         }
 
+        var generated = false
+        val newNode = document.createElement(fldStruct.getXmlTagName())
+
         if (fldStruct.isEmbedded()) {
             MessageStructureWriter.WRITER.traverse(
                 XmlMessageStructureVisitor(
                     document,
-                    node.appendChild(document.createElement(fldStruct.getXmlTagName())),
+                    newNode,
                     this.message
-                ), fldStruct
+                ) { generated = true }, fldStruct
             )
-            return
+        } else {
+            val messageValue = this.message[fieldName]?.getMessage()
+            if (messageValue == null && fldStruct.isRequired) {
+                error("Can not find field with name = $fieldName")
+            }
+
+            messageValue?.also {
+                MessageStructureWriter.WRITER.traverse(
+                    XmlMessageStructureVisitor(
+                        document,
+                        document.createElement(fldStruct.getXmlTagName()),
+                        messageValue
+                    ) { generated = true }, fldStruct
+                )
+            }
         }
 
-        val messageValue = this.message[fieldName]?.getMessage()
-        if (messageValue == null && fldStruct.isRequired) {
-            error("Can not find field with name = $fieldName")
-        }
-
-        messageValue?.also {
-            MessageStructureWriter.WRITER.traverse(
-                XmlMessageStructureVisitor(
-                    document,
-                    node.appendChild(document.createElement(fldStruct.getXmlTagName())),
-                    messageValue
-                ), fldStruct
-            )
+        if (generated) {
+            node.appendChild(newNode)
+            onGenerateField()
         }
     }
 
@@ -119,13 +129,31 @@ class XmlMessageStructureVisitor(private val document: Document, private val nod
 
         listValue?.forEach {
             val messageValue = it.getMessage() ?: error("List in field with name '$fieldName' contains not message")
-            MessageStructureWriter.WRITER.traverse(
-                XmlMessageStructureVisitor(
-                    document,
-                    node.appendChild(document.createElement(fldStruct.getXmlTagName())),
-                    messageValue
-                ), fldStruct
-            )
+            if (fldStruct.isEmbedded()) {
+                MessageStructureWriter.WRITER.traverse(
+                    XmlMessageStructureVisitor(
+                        document,
+                        node,
+                        messageValue
+                    ) {onGenerateField()}, fldStruct
+                )
+            } else {
+                var generated = false
+                val newNode = document.createElement(fldStruct.getXmlTagName())
+
+                MessageStructureWriter.WRITER.traverse(
+                    XmlMessageStructureVisitor(
+                        document,
+                        newNode,
+                        messageValue
+                    ), fldStruct
+                )
+
+                if (generated) {
+                    node.appendChild(newNode)
+                    onGenerateField()
+                }
+            }
         }
     }
 }

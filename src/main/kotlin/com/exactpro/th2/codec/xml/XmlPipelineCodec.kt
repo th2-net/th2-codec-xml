@@ -82,7 +82,10 @@ open class XmlPipelineCodec : IPipelineCodec {
                 try {
                     checkDictionaryMessage(msgStructure)
                 } catch (e: Exception) {
-                    throw CodecException("Have wrong dictionary structure in message with name '${msgStructure.name}'", e)
+                    throw CodecException(
+                        "Have wrong dictionary structure in message with name '${msgStructure.name}'",
+                        e
+                    )
                 }
             }
 
@@ -117,7 +120,11 @@ open class XmlPipelineCodec : IPipelineCodec {
         checkDictionaryMessage(HashMap(), HashMap(), msgStructure)
     }
 
-    private fun checkDictionaryMessage(fieldLikeNodes: MutableMap<String, Pair<String, IMessageStructure>>, fieldLikeAttrs: MutableMap<String, Pair<String, IMessageStructure>>, messageStructure: IMessageStructure) {
+    private fun checkDictionaryMessage(
+        fieldLikeNodes: MutableMap<String, Pair<String, IMessageStructure>>,
+        fieldLikeAttrs: MutableMap<String, Pair<String, IMessageStructure>>,
+        messageStructure: IMessageStructure
+    ) {
         messageStructure.fields.forEach { (fieldName, fieldStructure) ->
             if (fieldStructure.isComplex && (fieldStructure as IMessageStructure).isEmbedded()) {
                 checkDictionaryMessage(fieldLikeNodes, fieldLikeAttrs, fieldStructure)
@@ -165,7 +172,11 @@ open class XmlPipelineCodec : IPipelineCodec {
         val document = DOCUMENT_BUILDER.get().newDocument()
         val xmlMsgType = messageStructure.getXmlTagName()
 
-        val msgNode = (xmlRootTagName?.let { rootTagName -> document.addNode(rootTagName, document) } ?: document).addNode(xmlMsgType, document)
+        val msgNode =
+            (xmlRootTagName?.let { rootTagName -> document.addNode(rootTagName, document) } ?: document).addNode(
+                xmlMsgType,
+                document
+            )
 
         try {
             MessageStructureWriter.WRITER.traverse(
