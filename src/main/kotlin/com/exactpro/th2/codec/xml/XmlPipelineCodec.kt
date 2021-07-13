@@ -29,6 +29,7 @@ import com.exactpro.th2.common.grpc.Message
 import com.exactpro.th2.common.grpc.MessageGroup
 import com.exactpro.th2.common.grpc.RawMessage
 import com.exactpro.th2.common.grpc.Value
+import com.exactpro.th2.common.message.addField
 import com.exactpro.th2.common.message.message
 import com.exactpro.th2.common.message.messageType
 import com.exactpro.th2.common.message.set
@@ -334,6 +335,14 @@ open class XmlPipelineCodec : IPipelineCodec {
             val attrName = fieldStructure.getAttrName()
             val list = ArrayList<Node>()
 
+            if (fieldStructure is IMessageStructure && fieldStructure.isXmlHide()) {
+                val virtualMessage = message()
+                decodeMessageFields(virtualMessage, node, fieldStructure)
+                messageBuilder.addField(fieldName, virtualMessage)
+
+                return@forEach
+            }
+
             attrName?.let { node.attributes?.getNamedItem(it) }?.also {
                 list.add(it)
             }
@@ -530,12 +539,17 @@ open class XmlPipelineCodec : IPipelineCodec {
         const val XML_ATTRIBUTE_VALUE_ATTRIBUTE = "XmlAttributeValue"
 
         /**
-         * Boolean attribute. If true fields from current message will be set to parent message
+         * Boolean attribute. If true fields from current message will be move to a parent message
          */
         const val EMBEDDED_ATTRIBUTE = "Embedded"
 
         /**
-         * XPath expression for find xml nodes
+         * Boolean attribute. If true xml tag for current message will not created
+         */
+        const val XML_HIDE_ATTRIBUTE = "XmlHide"
+
+        /**
+         * XPath expression for find xml nodes. It doesn't work for encoding
          */
         const val XML_X_PATH_EXPRESSION_ATTRIBUTE = "XPath"
 

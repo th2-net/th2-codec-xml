@@ -22,6 +22,7 @@ import com.exactpro.th2.common.grpc.Message
 import com.exactpro.th2.common.grpc.MessageGroup
 import com.exactpro.th2.common.grpc.RawMessage
 import com.exactpro.th2.common.grpc.Value
+import com.exactpro.th2.common.message.addField
 import com.exactpro.th2.common.message.addFields
 import com.exactpro.th2.common.message.message
 import com.exactpro.th2.common.value.get
@@ -275,6 +276,34 @@ class XmlPipelineCodecTest {
                 "defaultMsgAttrA", 123
             )
         )
+    }
+
+    @Test
+    fun `test embedded`() {
+        check("""
+            <TestEmbedded>
+                <not_embedded>123</not_embedded>
+                <message>
+                    <embedded>456</embedded>
+                </message>
+            </TestEmbedded>
+        """.trimIndent(), message().addFields(
+            "not_embedded", 123,
+            "embedded", 456
+        ))
+    }
+
+    @Test
+    fun `test xml hide`() {
+        check("""
+            <TestHideXml>
+                <field0>123</field0>
+                <field1>155</field1>
+            </TestHideXml>
+        """.trimIndent(), message().addFields(
+            "field0", 123,
+            "hide", message().addField("field1", 155)
+        ))
     }
 
     private fun check(xml: String, message: Message.Builder) {

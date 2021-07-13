@@ -73,6 +73,7 @@ fun IFieldStructure.isValidNode(node: Node): Boolean {
 }
 
 fun IMessageStructure.isEmbedded() : Boolean = attributes[XmlPipelineCodec.EMBEDDED_ATTRIBUTE]?.getCastValue() ?: false
+fun IMessageStructure.isXmlHide() : Boolean = attributes[XmlPipelineCodec.XML_HIDE_ATTRIBUTE]?.getCastValue() ?: false
 
 fun XPath.find(expression: String, parentNode: Node, handleError: (Exception) -> Exception): NodeList {
     try {

@@ -206,5 +206,21 @@
             <field name="commonWithAttrs_attr" reference="M_CWAttrs"/>
             <field name="withAttrs_attr" reference="M_AttrsPart"/>
         </message>
+        <message name="TestEmbedded">
+            <field name="not_embedded" type="java.lang.String"/>
+            <field name="message" reference="M_TestEmbeddedMessage"/>
+        </message>
+        <message name="TestEmbeddedMessage" id="M_TestEmbeddedMessage">
+            <attribute name="Embedded" type="java.lang.Boolean">true</attribute>
+            <field name="embedded" type="java.lang.String"/>
+        </message>
+        <message name="TestHideXml">
+            <field name="field0" type="java.lang.String"/>
+            <field name="hide" reference="M_TestHideXmlMessage"/>
+        </message>
+        <message name="TestHideXmlMessage" id="M_TestHideXmlMessage">
+            <attribute name="XmlHide" type="java.lang.Boolean">true</attribute>
+            <field name="field1" type="java.lang.String"/>
+        </message>
     </messages>
 </dictionary>
