@@ -288,22 +288,12 @@ class XmlPipelineCodecTest {
 
     @Test
     fun `test decode collection`() {
-        checkEncode("""
-            <TestCollection>
-                <collection>1234</collection>
-                <collection>5678</collection>
-                <collectionMessage>
-                    <field0>1011</field0>
-                </collectionMessage>
-                <collectionMessage>
-                    <field0>1213</field0>
-                </collectionMessage>
-            </TestCollection>
-        """.trimIndent(), message("TestCollection").addFields("collection", listOf(1234, 5678),
-            "collectionMessage", listOf(
-                message().addField("field0", 1011),
-                message().addField("field0", 1213)
-            )))
+        checkDecode(COLLECTIONS_STR, COLLECTIONS_MSG)
+    }
+
+    @Test
+    fun `test encode collection`() {
+        checkEncode(COLLECTIONS_STR, COLLECTIONS_MSG)
     }
 
     private fun checkEncode(xml: String, message: Message.Builder) {
@@ -457,6 +447,24 @@ class XmlPipelineCodecTest {
         val DUPLICATE_FIELD_IN_VIRTUAL_MSG = message("TestDuplicateVirtual")
             .addFields("field0", 1234, "virtual", message().addFields("field0", 1234))
 
+        val COLLECTIONS_STR = """
+            <TestCollection>
+                <collection>1234</collection>
+                <collection>5678</collection>
+                <collectionMessage>
+                    <field0>1011</field0>
+                </collectionMessage>
+                <collectionMessage>
+                    <field0>1213</field0>
+                </collectionMessage>
+            </TestCollection>
+        """.trimIndent()
+
+        val COLLECTIONS_MSG = message("TestCollection").addFields("collection", listOf(1234, 5678),
+            "collectionMessage", listOf(
+                message().addField("field0", 1011),
+                message().addField("field0", 1213)
+            ))
 
     }
 }

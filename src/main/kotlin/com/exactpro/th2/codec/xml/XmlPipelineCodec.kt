@@ -237,7 +237,7 @@ open class XmlPipelineCodec : IPipelineCodec {
                     nodes.map { xmlNode ->
                         decodeMessageNode(
                             xmlNode,
-                            msgStructure!!
+                            msgStructure
                         ).also { builder ->
                             builder.metadataBuilder.also { msgMetadata ->
                                 rawMessage.metadata.also { rawMetadata ->
