@@ -45,7 +45,13 @@ class XmlMessageStructureVisitor(private val document: Document, private val nod
                     error("Field node is not element. Field name = $fieldName")
                 }
             } else {
-                node.addNode(fldStruct.getXmlTagName(), document).setText(fieldValue, document)
+                val nodeName = fldStruct.getXmlTagName()
+                val valueNode = node.findNode(nodeName)
+                if (valueNode == null) {
+                    node.addNode(nodeName, document).setText(fieldValue, document)
+                } else if (valueNode.getText() != fieldValue) {
+                    error("Can not encode field with name '$fieldName' with two different values: ['$fieldValue','${valueNode.getText()}']")
+                }
             }
         } else if (fldStruct.isRequired) {
             error("Can not find field with name = $fieldName")
@@ -75,31 +81,12 @@ class XmlMessageStructureVisitor(private val document: Document, private val nod
             error("Can not find message structure for field with name = $fieldName")
         }
 
-        if (fldStruct.isEmbedded()) {
-            MessageStructureWriter.WRITER.traverse(
-                XmlMessageStructureVisitor(
-                    document,
-                    node.appendChild(document.createElement(fldStruct.getXmlTagName())),
-                    this.message
-                ), fldStruct
-            )
-            return
-        }
-
-        val messageValue = this.message[fieldName]?.getMessage()
+        val messageValue = if (fldStruct.isEmbedded()) message else message[fieldName]?.getMessage()
         if (messageValue == null && fldStruct.isRequired) {
             error("Can not find field with name = $fieldName")
         }
 
-        messageValue?.also {
-            MessageStructureWriter.WRITER.traverse(
-                XmlMessageStructureVisitor(
-                    document,
-                    node.appendChild(document.createElement(fldStruct.getXmlTagName())),
-                    messageValue
-                ), fldStruct
-            )
-        }
+        visitMessage(fieldName, messageValue, fldStruct, false)
     }
 
     override fun visitMessageCollection(
@@ -119,13 +106,44 @@ class XmlMessageStructureVisitor(private val document: Document, private val nod
 
         listValue?.forEach {
             val messageValue = it.getMessage() ?: error("List in field with name '$fieldName' contains not message")
+
+            visitMessage(fieldName, messageValue, fldStruct, true)
+        }
+    }
+
+    private fun visitMessage(fieldName: String, message: Message?, fldStruct: IFieldStructure, isCollection: Boolean) {
+        if (fldStruct !is IMessageStructure) {
+            error("Can not find message structure for field with name = $fieldName")
+        }
+
+        if (message == null || message.fieldsMap.keys.intersect(fldStruct.fields.keys).isEmpty()) {
+            return
+        }
+
+        val xmlTagName = fldStruct.getXmlTagName()
+
+        if (fldStruct.isEmbedded()) {
             MessageStructureWriter.WRITER.traverse(
                 XmlMessageStructureVisitor(
                     document,
-                    node.appendChild(document.createElement(fldStruct.getXmlTagName())),
-                    messageValue
+                    if (!isCollection) node.findOrAddNode(xmlTagName, document) else node.addNode(xmlTagName, document),
+                    message
                 ), fldStruct
             )
+            return
         }
+
+        MessageStructureWriter.WRITER.traverse(
+            XmlMessageStructureVisitor(
+                document,
+                if (fldStruct.isVirtual()) node else if (!isCollection) node.findOrAddNode(
+                    xmlTagName,
+                    document
+                ) else node.addNode(
+                    xmlTagName, document
+                ),
+                message
+            ), fldStruct
+        )
     }
 }

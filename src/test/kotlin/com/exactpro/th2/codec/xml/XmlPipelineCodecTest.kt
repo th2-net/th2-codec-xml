@@ -22,6 +22,7 @@ import com.exactpro.th2.common.grpc.Message
 import com.exactpro.th2.common.grpc.MessageGroup
 import com.exactpro.th2.common.grpc.RawMessage
 import com.exactpro.th2.common.grpc.Value
+import com.exactpro.th2.common.message.addField
 import com.exactpro.th2.common.message.addFields
 import com.exactpro.th2.common.message.message
 import com.exactpro.th2.common.value.get
@@ -33,16 +34,6 @@ import kotlin.test.assertNotNull
 import kotlin.test.fail
 
 class XmlPipelineCodecTest {
-
-    companion object {
-        val codec = XmlPipelineCodec()
-        val dictionary: IDictionaryStructure =
-            XmlDictionaryStructureLoader().load(Thread.currentThread().contextClassLoader.getResourceAsStream("test_dictionary.xml"))
-
-        init {
-            codec.init(dictionary, null)
-        }
-    }
 
     @Test
     fun `test wrong dictionary`() {
@@ -62,7 +53,7 @@ class XmlPipelineCodecTest {
 
     @Test
     fun `test common fields a`() {
-        check("""
+        checkDecode("""
             <commonFieldsA>
                 <f>123</f>
                 <abc>
@@ -73,7 +64,7 @@ class XmlPipelineCodecTest {
                     <c>90</c>
                 </abc>
             </commonFieldsA>
-        """.trimIndent(), message().apply {
+        """.trimIndent(), message("CommonFieldsA").apply {
             metadataBuilder.protocol = "XML"
             addFields(
                 "f", 123,
@@ -86,7 +77,7 @@ class XmlPipelineCodecTest {
 
     @Test
     fun `test attributes fields`() {
-        check(
+        checkDecode(
             """<TestAttrMessage>
                 <b>
                     <c>
@@ -111,7 +102,7 @@ class XmlPipelineCodecTest {
                     </c>
                 </b>
             </TestAttrMessage>
-        """.trimIndent(), message().addFields(
+        """.trimIndent(), message("TestAttrMessage").addFields(
                 "b", listOf(
                     message().addFields("F", 123, "G", 1, "e", "asd"),
                     message().addFields("F", 456, "G", 2, "e", "fgh", "n", 48, "h", "A"),
@@ -123,7 +114,7 @@ class XmlPipelineCodecTest {
 
     @Test
     fun `test repeating group`() {
-        check(
+        checkDecode(
             """
             <repeatingGroups>
                 <groupA>
@@ -193,7 +184,7 @@ class XmlPipelineCodecTest {
                     </B>
                 </groupA>
             </repeatingGroups>
-        """.trimIndent(), message().addFields(
+        """.trimIndent(), message("RepeatingGroup").addFields(
                 "A", listOf(
                     message().addFields(
                         "E", listOf(
@@ -238,14 +229,14 @@ class XmlPipelineCodecTest {
 
     @Test
     fun `test simple repeating`() {
-        check(
+        checkDecode(
             """
             <simpleRepeating>
                 <user id="1">admin</user>
                 <user id="2">user</user>
                 <user id="3">guest</user>
             </simpleRepeating>
-        """.trimIndent(), message().addFields(
+        """.trimIndent(), message("SimpleRepeating").addFields(
                 "user", listOf(
                     message().addFields("id", 1, "name", "admin"),
                     message().addFields("id", 2, "name", "user"),
@@ -256,39 +247,78 @@ class XmlPipelineCodecTest {
     }
 
     @Test
-    fun `test attrs in different places`() {
-        check(
-            """
-            <attributes defaultMsgAttrA="123" msgAttrA="45" msgAttrB="67">
-                <commonWithAttrs commonAttrA="54" commonAttrB="76">abc</commonWithAttrs>
-                <withAttrs defaultFieldAttrA="456" fieldAttrA="10" fieldAttrB="30">def</withAttrs>
-            </attributes>
-        """.trimIndent(), message().addFields(
-                "msgAttrA", 45,
-                "msgAttrB", 67,
-                "commonAttrA", 54,
-                "commonAttrB", 76,
-                "fieldAttrA", 10,
-                "fieldAttrB", 30,
-                "commonWithAttrs", "abc",
-                "withAttrs", "def",
-                "defaultMsgAttrA", 123
-            )
+    fun `test decode attrs in different places`() {
+        checkDecode(ATTRS_IN_DIFFERENT_PLACE_DECODE_STR, ATTRS_IN_DIFFERENT_PLACE_MSG)
+    }
+
+    @Test
+    fun `test encode attrs in different place`() {
+        checkEncode(ATTRS_IN_DIFFERENT_PLACE_ENCODE_STR, ATTRS_IN_DIFFERENT_PLACE_MSG)
+    }
+
+    @Test
+    fun `test decode embedded`() {
+        checkDecode(EMBEDDED_XML, EMBEDDED_MSG)
+    }
+
+    @Test
+    fun `test encode embedded`() {
+        checkEncode(EMBEDDED_XML, EMBEDDED_MSG)
+    }
+
+    @Test
+    fun `test decode virtual`() {
+        checkDecode(VIRTUAL_STR, VIRTUAL_MSG)
+    }
+
+    @Test
+    fun `test encode virtual`() {
+        checkEncode(VIRTUAL_STR, VIRTUAL_MSG)
+    }
+
+    @Test
+    fun `test decode duplicate field in virtual`() {
+        checkDecode(DUPLICATE_FIELD_IN_VIRTUAL_STR, DUPLICATE_FIELD_IN_VIRTUAL_MSG)
+    }
+
+    @Test
+    fun `test encode duplicate field in virtual`() {
+        checkEncode(DUPLICATE_FIELD_IN_VIRTUAL_STR, DUPLICATE_FIELD_IN_VIRTUAL_MSG)
+    }
+
+    @Test
+    fun `test decode collection`() {
+        checkDecode(COLLECTIONS_STR, COLLECTIONS_MSG)
+    }
+
+    @Test
+    fun `test encode collection`() {
+        checkEncode(COLLECTIONS_STR, COLLECTIONS_MSG)
+    }
+
+    private fun checkEncode(xml: String, message: Message.Builder) {
+        val group =
+            codec.encode(MessageGroup.newBuilder().addMessages(AnyMessage.newBuilder().setMessage(message)).build())
+        assertEquals(1, group.messagesCount)
+
+        assertEquals(
+            "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n$xml\n",
+            group.messagesList[0].rawMessage.body.toStringUtf8()
         )
     }
 
-    private fun check(xml: String, message: Message.Builder) {
+    private fun checkDecode(xml: String, message: Message.Builder) {
         val group = codec.decode(createRawMessage(xml))
         assertEquals(1, group.messagesCount)
 
-        assertEqualsMessages(message.build(), group.messagesList[0].message)
+        assertEqualsMessages(message.build(), group.messagesList[0].message, true)
     }
 
     private fun assertEqualsMessages(expected: Message, actual: Message, checkMetadata: Boolean = false) {
         if (checkMetadata) {
             assertEquals(expected.metadata.messageType, actual.metadata.messageType, "Not equals message types")
-            assertEquals(expected.metadata.protocol, actual.metadata.protocol, "Not equals protocols")
-            assertEquals(expected.metadata.id, actual.metadata.id, "Not equals ids")
+            //assertEquals(expected.metadata.protocol, actual.metadata.protocol, "Not equals protocols")
+            //assertEquals(expected.metadata.id, actual.metadata.id, "Not equals ids")
         }
 
         assertEquals(
@@ -345,4 +375,96 @@ class XmlPipelineCodecTest {
             )
         )
         .build()
+
+    companion object {
+        val codec = XmlPipelineCodec()
+        val dictionary: IDictionaryStructure =
+            XmlDictionaryStructureLoader().load(Thread.currentThread().contextClassLoader.getResourceAsStream("test_dictionary.xml"))
+
+        init {
+            codec.init(dictionary, null)
+        }
+
+        val EMBEDDED_XML = """
+            <TestEmbedded>
+                <not_embedded>123</not_embedded>
+                <message>
+                    <embedded>456</embedded>
+                </message>
+            </TestEmbedded>
+        """.trimIndent()
+
+        val EMBEDDED_MSG = message("TestEmbedded").addFields(
+            "not_embedded", 123,
+            "embedded", 456
+        )
+
+        val VIRTUAL_STR = """
+            <TestVirtual>
+                <field0>123</field0>
+                <field1>155</field1>
+            </TestVirtual>
+        """.trimIndent()
+
+        val VIRTUAL_MSG = message("TestVirtual").addFields(
+            "field0", 123,
+            "virtual", message().addField("field1", 155)
+        )
+
+        val ATTRS_IN_DIFFERENT_PLACE_DECODE_STR = """
+            <attributes defaultMsgAttrA="123" msgAttrA="45" msgAttrB="67">
+                <commonWithAttrs commonAttrA="54" commonAttrB="76">abc</commonWithAttrs>
+                <withAttrs defaultFieldAttrA="456" fieldAttrA="10" fieldAttrB="30">def</withAttrs>
+            </attributes>
+        """.trimIndent()
+
+        val ATTRS_IN_DIFFERENT_PLACE_ENCODE_STR = """
+            <attributes defaultMsgAttrA="123" msgAttrA="45" msgAttrB="67">
+                <commonWithAttrs commonAttrA="54" commonAttrB="76">abc</commonWithAttrs>
+                <withAttrs fieldAttrA="10" fieldAttrB="30">def</withAttrs>
+            </attributes>
+        """.trimIndent()
+
+
+        val ATTRS_IN_DIFFERENT_PLACE_MSG = message("Attributes").addFields(
+            "msgAttrA", 45,
+            "msgAttrB", 67,
+            "commonAttrA", 54,
+            "commonAttrB", 76,
+            "fieldAttrA", 10,
+            "fieldAttrB", 30,
+            "commonWithAttrs", "abc",
+            "withAttrs", "def",
+            "defaultMsgAttrA", 123
+        )
+
+        val DUPLICATE_FIELD_IN_VIRTUAL_STR = """
+            <TestDuplicateVirtual>
+                <field0>1234</field0>
+            </TestDuplicateVirtual>
+        """.trimIndent()
+
+        val DUPLICATE_FIELD_IN_VIRTUAL_MSG = message("TestDuplicateVirtual")
+            .addFields("field0", 1234, "virtual", message().addFields("field0", 1234))
+
+        val COLLECTIONS_STR = """
+            <TestCollection>
+                <collection>1234</collection>
+                <collection>5678</collection>
+                <collectionMessage>
+                    <field0>1011</field0>
+                </collectionMessage>
+                <collectionMessage>
+                    <field0>1213</field0>
+                </collectionMessage>
+            </TestCollection>
+        """.trimIndent()
+
+        val COLLECTIONS_MSG = message("TestCollection").addFields("collection", listOf(1234, 5678),
+            "collectionMessage", listOf(
+                message().addField("field0", 1011),
+                message().addField("field0", 1213)
+            ))
+
+    }
 }
