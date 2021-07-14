@@ -335,7 +335,7 @@ open class XmlPipelineCodec : IPipelineCodec {
             val attrName = fieldStructure.getAttrName()
             val list = ArrayList<Node>()
 
-            if (fieldStructure is IMessageStructure && fieldStructure.isXmlHide()) {
+            if (fieldStructure is IMessageStructure && fieldStructure.isVirtual()) {
                 val virtualMessage = message()
                 decodeMessageFields(virtualMessage, node, fieldStructure)
                 messageBuilder.addField(fieldName, virtualMessage)
@@ -539,14 +539,14 @@ open class XmlPipelineCodec : IPipelineCodec {
         const val XML_ATTRIBUTE_VALUE_ATTRIBUTE = "XmlAttributeValue"
 
         /**
-         * Boolean attribute. If true fields from current message will be move to a parent message
+         * Boolean attribute. If true fields from the current message will be moved to a parent message during decoding and packed to sub-message during encoding
          */
         const val EMBEDDED_ATTRIBUTE = "Embedded"
 
         /**
-         * Boolean attribute. If true xml tag for current message will not created
+         * Boolean attribute. If true fields from the current message will be packed to sub-message during decoding and moved to a parent message during encoding.
          */
-        const val XML_HIDE_ATTRIBUTE = "XmlHide"
+        const val XML_VIRTUAL_ATTRIBUTE = "Virtual"
 
         /**
          * XPath expression for find xml nodes. It doesn't work for encoding

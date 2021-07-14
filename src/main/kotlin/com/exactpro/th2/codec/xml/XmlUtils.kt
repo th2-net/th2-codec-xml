@@ -49,6 +49,8 @@ fun Node.setText(text: String, document: Document) {
 }
 
 fun Node.addNode(name: String, document: Document) : Node = appendChild(document.createElement(name))
+fun Node.findNode(name: String) : Node? = childNodes.toList().find { it.nodeName == name }
+fun Node.findOrAddNode(name: String, document: Document) : Node = findNode(name) ?: addNode(name, document)
 
 fun IDictionaryStructure.getCharsetName(): String? = attributes[XmlPipelineCodec.XML_CHARSET_ATTRIBUTE]?.value
 
@@ -73,7 +75,7 @@ fun IFieldStructure.isValidNode(node: Node): Boolean {
 }
 
 fun IMessageStructure.isEmbedded() : Boolean = attributes[XmlPipelineCodec.EMBEDDED_ATTRIBUTE]?.getCastValue() ?: false
-fun IMessageStructure.isXmlHide() : Boolean = attributes[XmlPipelineCodec.XML_HIDE_ATTRIBUTE]?.getCastValue() ?: false
+fun IMessageStructure.isVirtual() : Boolean = attributes[XmlPipelineCodec.XML_VIRTUAL_ATTRIBUTE]?.getCastValue() ?: false
 
 fun XPath.find(expression: String, parentNode: Node, handleError: (Exception) -> Exception): NodeList {
     try {

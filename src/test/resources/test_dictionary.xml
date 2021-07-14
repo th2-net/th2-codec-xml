@@ -182,7 +182,7 @@
         <message name="AttributesPart" id="M_AttrsPart">
             <attribute name="XmlTagName">withAttrs</attribute>
             <attribute name="Embedded" type="java.lang.Boolean">true</attribute>
-            <field name="defaultFieldAttrA" type="java.lang.String" defaultvalue="456"/>
+            <field name="defaultFieldAttrA" type="java.lang.String"/>
             <field name="fieldAttrA" type="java.lang.String">
                 <attribute name="XmlAttributeName">fieldAttrA</attribute>
             </field>
@@ -206,6 +206,8 @@
             <field name="commonWithAttrs_attr" reference="M_CWAttrs"/>
             <field name="withAttrs_attr" reference="M_AttrsPart"/>
         </message>
+
+
         <message name="TestEmbedded">
             <field name="not_embedded" type="java.lang.String"/>
             <field name="message" reference="M_TestEmbeddedMessage"/>
@@ -214,13 +216,33 @@
             <attribute name="Embedded" type="java.lang.Boolean">true</attribute>
             <field name="embedded" type="java.lang.String"/>
         </message>
-        <message name="TestHideXml">
+
+
+        <message name="TestVirtual">
             <field name="field0" type="java.lang.String"/>
-            <field name="hide" reference="M_TestHideXmlMessage"/>
+            <field name="virtual" reference="M_TestVirtualMessage"/>
         </message>
-        <message name="TestHideXmlMessage" id="M_TestHideXmlMessage">
-            <attribute name="XmlHide" type="java.lang.Boolean">true</attribute>
+        <message name="TestVirtualMessage" id="M_TestVirtualMessage">
+            <attribute name="Virtual" type="java.lang.Boolean">true</attribute>
             <field name="field1" type="java.lang.String"/>
+        </message>
+
+
+        <message name="TestDuplicateVirtual">
+            <field name="field0" type="java.lang.String"/>
+            <field name="virtual" reference="M_TestDuplicateVirtualMessage"/>
+        </message>
+        <message name="TestDuplicateVirtualMessage" id="M_TestDuplicateVirtualMessage">
+            <attribute name="Virtual" type="java.lang.Boolean">true</attribute>
+            <field name="field0" type="java.lang.String"/>
+        </message>
+
+        <message name="TestCollection">
+            <field name="collection" type="java.lang.String" isCollection="true"/>
+            <field name="collectionMessage" reference="M_TestCollectionMessage" isCollection="true"/>
+        </message>
+        <message name="TestCollectionMessage" id="M_TestCollectionMessage">
+            <field name="field0" type="java.lang.String"/>
         </message>
     </messages>
 </dictionary>
