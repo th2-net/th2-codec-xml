@@ -2,6 +2,9 @@
 
 ## Release notes
 
+### 0.0.3
++ Fixed encoding and decoding virtual messages collections and their fields.
+
 ### 0.0.2
 + Remove xml tags generation for empty messages
 + Add ability to create embedded messages collections

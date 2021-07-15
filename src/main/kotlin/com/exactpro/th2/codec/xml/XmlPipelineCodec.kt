@@ -29,7 +29,6 @@ import com.exactpro.th2.common.grpc.Message
 import com.exactpro.th2.common.grpc.MessageGroup
 import com.exactpro.th2.common.grpc.RawMessage
 import com.exactpro.th2.common.grpc.Value
-import com.exactpro.th2.common.message.addField
 import com.exactpro.th2.common.message.message
 import com.exactpro.th2.common.message.messageType
 import com.exactpro.th2.common.message.set
@@ -46,6 +45,8 @@ import java.io.ByteArrayInputStream
 import java.io.IOException
 import java.io.OutputStream
 import java.nio.charset.Charset
+import java.util.LinkedList
+import java.util.Queue
 import javax.xml.parsers.DocumentBuilder
 import javax.xml.parsers.DocumentBuilderFactory
 import javax.xml.parsers.ParserConfigurationException
@@ -335,14 +336,6 @@ open class XmlPipelineCodec : IPipelineCodec {
             val attrName = fieldStructure.getAttrName()
             val list = ArrayList<Node>()
 
-            if (fieldStructure is IMessageStructure && fieldStructure.isVirtual()) {
-                val virtualMessage = message()
-                decodeMessageFields(virtualMessage, node, fieldStructure)
-                messageBuilder.addField(fieldName, virtualMessage)
-
-                return@forEach
-            }
-
             attrName?.let { node.attributes?.getNamedItem(it) }?.also {
                 list.add(it)
             }
@@ -371,6 +364,32 @@ open class XmlPipelineCodec : IPipelineCodec {
         nodes: List<Node>,
         fieldStructure: IFieldStructure
     ) {
+        if (fieldStructure is IMessageStructure && fieldStructure.isVirtual()) {
+            val fields = HashMap<String, Queue<Node>>()
+            nodes.forEach {
+                fields.computeIfAbsent(it.nodeName) { LinkedList() }.add(it)
+            }
+
+            if (fieldStructure.isCollection) {
+                val listValue = ArrayList<Message.Builder>()
+                while (fields.size > 0) {
+                    val virtualMessage = message()
+                    decodeVirtualMessage(fields, virtualMessage, fieldStructure)
+                    listValue.add(virtualMessage)
+                }
+
+                message[fieldName] = listValue
+            } else {
+                val virtualMessage = message()
+                decodeVirtualMessage(fields, virtualMessage, fieldStructure)
+                if (fields.isNotEmpty()) {
+                    throw DecodeException("Can not decode field with name '$fieldName'. Not all field decoded for virtual message with name '${fieldStructure.name}'")
+                }
+                message[fieldName] = virtualMessage
+            }
+            return
+        }
+
         if (fieldStructure.isCollection) {
             val listBuilder = ListValue.newBuilder()
             nodes.forEach {
@@ -385,6 +404,28 @@ open class XmlPipelineCodec : IPipelineCodec {
         }
 
         decodeValue(message, fieldName, nodes[0], fieldStructure)
+    }
+
+    private fun decodeVirtualMessage(
+        fields: MutableMap<String, Queue<Node>>,
+        message: Message.Builder,
+        messageStructure: IMessageStructure
+    ) {
+        messageStructure.fields.forEach { (fieldName, fieldStructure) ->
+            val fieldNode = fields[fieldName]?.let {
+                val tmp = it.poll()
+                if (it.size < 1) {
+                    fields.remove(fieldName)
+                }
+                tmp
+            }
+
+            if (fieldNode != null) {
+                decodeFieldNode(message, fieldName, listOf(fieldNode), fieldStructure)
+            } else if (fieldStructure.isRequired) {
+                throw DecodeException("Can not find field '$fieldName' in message with name '${messageStructure.name}'")
+            }
+        }
     }
 
     private fun decodeValue(

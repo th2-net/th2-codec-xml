@@ -47,10 +47,8 @@ class XmlMessageStructureVisitor(private val document: Document, private val nod
             } else {
                 val nodeName = fldStruct.getXmlTagName()
                 val valueNode = node.findNode(nodeName)
-                if (valueNode == null) {
+                if (valueNode == null || valueNode.getText() != fieldValue) {
                     node.addNode(nodeName, document).setText(fieldValue, document)
-                } else if (valueNode.getText() != fieldValue) {
-                    error("Can not encode field with name '$fieldName' with two different values: ['$fieldValue','${valueNode.getText()}']")
                 }
             }
         } else if (fldStruct.isRequired) {
