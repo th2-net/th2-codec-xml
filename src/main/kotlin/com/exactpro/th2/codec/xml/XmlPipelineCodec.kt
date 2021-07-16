@@ -187,7 +187,7 @@ open class XmlPipelineCodec : IPipelineCodec {
 
         try {
             MessageStructureWriter.WRITER.traverse(
-                XmlMessageStructureVisitor(document, msgNode, message),
+                XmlMessageStructureVisitor(document, msgNode, message, false),
                 messageStructure
             )
         } catch (e: IllegalStateException) {

@@ -31,7 +31,12 @@ import org.w3c.dom.Document
 import org.w3c.dom.Element
 import org.w3c.dom.Node
 
-class XmlMessageStructureVisitor(private val document: Document, private val node: Node, private val message: Message) :
+class XmlMessageStructureVisitor(
+    private val document: Document,
+    private val node: Node,
+    private val message: Message,
+    private val multiplyParent: Boolean
+) :
     DefaultMessageStructureVisitor() {
 
     override fun visit(fieldName: String, value: String?, fldStruct: IFieldStructure, isDefault: Boolean) {
@@ -124,8 +129,12 @@ class XmlMessageStructureVisitor(private val document: Document, private val nod
             MessageStructureWriter.WRITER.traverse(
                 XmlMessageStructureVisitor(
                     document,
-                    if (!isCollection) node.findOrAddNode(xmlTagName, document) else node.addNode(xmlTagName, document),
-                    message
+                    if (isCollection || multiplyParent) node.addNode(xmlTagName, document) else node.findOrAddNode(
+                        xmlTagName,
+                        document
+                    ),
+                    message,
+                    isCollection
                 ), fldStruct
             )
             return
@@ -134,13 +143,12 @@ class XmlMessageStructureVisitor(private val document: Document, private val nod
         MessageStructureWriter.WRITER.traverse(
             XmlMessageStructureVisitor(
                 document,
-                if (fldStruct.isVirtual()) node else if (!isCollection) node.findOrAddNode(
+                if (fldStruct.isVirtual()) node else if (isCollection || multiplyParent) node.addNode(
                     xmlTagName,
                     document
-                ) else node.addNode(
-                    xmlTagName, document
-                ),
-                message
+                ) else node.findOrAddNode(xmlTagName, document),
+                message,
+                isCollection
             ), fldStruct
         )
     }
