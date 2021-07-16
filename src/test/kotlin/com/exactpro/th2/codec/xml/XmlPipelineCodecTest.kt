@@ -303,8 +303,18 @@ class XmlPipelineCodecTest {
     }
 
     @Test
-    fun `test decode virtual collection`(){
+    fun `test decode virtual collection`() {
         checkDecode(VIRTUAL_COLLECTION_STR, VIRTUAL_COLLECTION_MSG)
+    }
+
+    @Test
+    fun `test decode in virtual collection`() {
+        checkDecode(IN_VIRTUAL_COLLECTION_STR, IN_VIRTUAL_COLLECTION_MSG)
+    }
+
+    @Test
+    fun `test encode in virtual collection`() {
+        checkEncode(IN_VIRTUAL_COLLECTION_STR, IN_VIRTUAL_COLLECTION_MSG)
     }
 
     private fun checkEncode(xml: String, message: Message.Builder) {
@@ -497,13 +507,28 @@ class XmlPipelineCodecTest {
             )
         )
 
-        private fun parsedMessage(messageType: String) : Message.Builder = message(messageType).apply { metadataBuilder.apply {
-            protocol = "XML"
-            idBuilder.apply {
-                direction = Direction.FIRST
-                connectionIdBuilder.sessionAlias = "test_session_alias"
+        val IN_VIRTUAL_COLLECTION_STR = """
+            <TestInVirtualCollection>
+                <field0>123</field0>
+                <field0>456</field0>
+            </TestInVirtualCollection>
+        """.trimIndent()
+
+        val IN_VIRTUAL_COLLECTION_MSG = parsedMessage("TestInVirtualCollection").addFields(
+            "virtual", message().addFields(
+                "field0", listOf(123, 456)
+            )
+        )
+
+            private fun parsedMessage(messageType: String): Message.Builder = message(messageType).apply {
+            metadataBuilder.apply {
+                protocol = "XML"
+                idBuilder.apply {
+                    direction = Direction.FIRST
+                    connectionIdBuilder.sessionAlias = "test_session_alias"
+                }
             }
-        } }
+        }
 
     }
 }

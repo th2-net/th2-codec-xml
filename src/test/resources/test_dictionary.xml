@@ -249,5 +249,13 @@
         <message name="TestVirtualCollection">
             <field name="virtual" reference="M_TestVirtualMessage" isCollection="true"/>
         </message>
+
+        <message name="TestInVirtualCollection">
+            <field name="virtual" reference="M_TestInVirtualCollectionMessage"/>
+        </message>
+        <message name="TestInVirtualCollectionMessage" id="M_TestInVirtualCollectionMessage">
+            <attribute name="Virtual" type="java.lang.Boolean">true</attribute>
+            <field name="field0" type="java.lang.String" isCollection="true"/>
+        </message>
     </messages>
 </dictionary>

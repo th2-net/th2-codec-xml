@@ -62,7 +62,7 @@ fun IFieldStructure.isValidNode(node: Node): Boolean {
         return false
     }
 
-    if (this is IMessageStructure && isVirtual()) {
+    if (isComplex && (this as IMessageStructure).isVirtual()) {
         return fields.containsKey(node.nodeName)
     }
 
