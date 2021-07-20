@@ -135,6 +135,10 @@ open class XmlPipelineCodec : IPipelineCodec {
                 if (messageStructure.isCollection && fieldStructure.isCollection && (fieldStructure.isEmbedded() || fieldStructure.isVirtual())) {
                     error("This codec does not support embedded or virtual messages collection with inner collections field")
                 }
+
+                if (fieldStructure.isEmbedded() && fieldStructure.isVirtual()) {
+                    error("This codec does not support embedded and virtual attributes in the same message")
+                }
             } else {
                 val attrName = fieldStructure.getAttrName()
                 if (attrName == null) {

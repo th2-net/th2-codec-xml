@@ -24,7 +24,6 @@ import com.exactpro.th2.common.grpc.Message
 import com.exactpro.th2.common.message.get
 import com.exactpro.th2.common.message.getList
 import com.exactpro.th2.common.message.getString
-import com.exactpro.th2.common.value.getList
 import com.exactpro.th2.common.value.getMessage
 import com.exactpro.th2.common.value.getString
 import org.w3c.dom.Document
@@ -102,16 +101,16 @@ class XmlMessageStructureVisitor(
             error("Can not find message structure for field with name = $fieldName")
         }
 
-        val listValue = this.message[fieldName]?.getList()
-        if (listValue == null && fldStruct.isRequired) {
-            error("Can not find field with name = $fieldName")
-        }
+        this.message[fieldName]?.let { value ->
+            if (value.hasListValue()) {
+                value.listValue.valuesList.forEach { item ->
+                    val messageValue =
+                        item.getMessage() ?: error("List in field with name '$fieldName' contains not message")
 
-        listValue?.forEach {
-            val messageValue = it.getMessage() ?: error("List in field with name '$fieldName' contains not message")
-
-            visitMessage(fieldName, messageValue, fldStruct, true)
-        }
+                    visitMessage(fieldName, messageValue, fldStruct, true)
+                }
+            }
+        } ?: if (fldStruct.isRequired) error("Can not find field with name = $fieldName")
     }
 
     private fun visitMessage(fieldName: String, message: Message?, fldStruct: IFieldStructure, isCollection: Boolean) {
@@ -125,28 +124,14 @@ class XmlMessageStructureVisitor(
 
         val xmlTagName = fldStruct.getXmlTagName()
 
-        if (fldStruct.isEmbedded()) {
-            MessageStructureWriter.WRITER.traverse(
-                XmlMessageStructureVisitor(
-                    document,
-                    if (isCollection || multiplyParent) node.addNode(xmlTagName, document) else node.findOrAddNode(
-                        xmlTagName,
-                        document
-                    ),
-                    message,
-                    isCollection
-                ), fldStruct
-            )
-            return
-        }
+        val newNode = if (fldStruct.isVirtual()) node else
+            if (isCollection || multiplyParent) node.addNode(xmlTagName, document)
+            else node.findOrAddNode(xmlTagName, document)
 
         MessageStructureWriter.WRITER.traverse(
             XmlMessageStructureVisitor(
                 document,
-                if (fldStruct.isVirtual()) node else if (isCollection || multiplyParent) node.addNode(
-                    xmlTagName,
-                    document
-                ) else node.findOrAddNode(xmlTagName, document),
+                newNode,
                 message,
                 isCollection
             ), fldStruct
