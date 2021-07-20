@@ -51,7 +51,7 @@ class XmlMessageStructureVisitor(
             } else {
                 val nodeName = fldStruct.getXmlTagName()
                 val valueNode = node.findNode(nodeName)
-                if (valueNode == null || valueNode.getText() != fieldValue) {
+                if (valueNode == null || multiplyParent) {
                     node.addNode(nodeName, document).setText(fieldValue, document)
                 }
             }
@@ -124,9 +124,11 @@ class XmlMessageStructureVisitor(
 
         val xmlTagName = fldStruct.getXmlTagName()
 
-        val newNode = if (fldStruct.isVirtual()) node else
-            if (isCollection || multiplyParent) node.addNode(xmlTagName, document)
-            else node.findOrAddNode(xmlTagName, document)
+        val newNode = when {
+            fldStruct.isVirtual() -> node
+            isCollection || multiplyParent -> node.addNode(xmlTagName, document)
+            else -> node.findOrAddNode(xmlTagName, document)
+        }
 
         MessageStructureWriter.WRITER.traverse(
             XmlMessageStructureVisitor(
