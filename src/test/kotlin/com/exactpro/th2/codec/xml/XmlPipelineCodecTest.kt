@@ -18,6 +18,7 @@ import com.exactpro.sf.common.messages.structures.IDictionaryStructure
 import com.exactpro.sf.common.messages.structures.loaders.XmlDictionaryStructureLoader
 import com.exactpro.th2.codec.CodecException
 import com.exactpro.th2.common.grpc.AnyMessage
+import com.exactpro.th2.common.grpc.Direction
 import com.exactpro.th2.common.grpc.Message
 import com.exactpro.th2.common.grpc.MessageGroup
 import com.exactpro.th2.common.grpc.RawMessage
@@ -64,7 +65,7 @@ class XmlPipelineCodecTest {
                     <c>90</c>
                 </abc>
             </commonFieldsA>
-        """.trimIndent(), message("CommonFieldsA").apply {
+        """.trimIndent(), parsedMessage("CommonFieldsA").apply {
             metadataBuilder.protocol = "XML"
             addFields(
                 "f", 123,
@@ -102,7 +103,7 @@ class XmlPipelineCodecTest {
                     </c>
                 </b>
             </TestAttrMessage>
-        """.trimIndent(), message("TestAttrMessage").addFields(
+        """.trimIndent(), parsedMessage("TestAttrMessage").addFields(
                 "b", listOf(
                     message().addFields("F", 123, "G", 1, "e", "asd"),
                     message().addFields("F", 456, "G", 2, "e", "fgh", "n", 48, "h", "A"),
@@ -184,7 +185,7 @@ class XmlPipelineCodecTest {
                     </B>
                 </groupA>
             </repeatingGroups>
-        """.trimIndent(), message("RepeatingGroup").addFields(
+        """.trimIndent(), parsedMessage("RepeatingGroup").addFields(
                 "A", listOf(
                     message().addFields(
                         "E", listOf(
@@ -236,7 +237,7 @@ class XmlPipelineCodecTest {
                 <user id="2">user</user>
                 <user id="3">guest</user>
             </simpleRepeating>
-        """.trimIndent(), message("SimpleRepeating").addFields(
+        """.trimIndent(), parsedMessage("SimpleRepeating").addFields(
                 "user", listOf(
                     message().addFields("id", 1, "name", "admin"),
                     message().addFields("id", 2, "name", "user"),
@@ -296,6 +297,26 @@ class XmlPipelineCodecTest {
         checkEncode(COLLECTIONS_STR, COLLECTIONS_MSG)
     }
 
+    @Test
+    fun `test encode virtual collection`() {
+        checkEncode(VIRTUAL_COLLECTION_STR, VIRTUAL_COLLECTION_MSG)
+    }
+
+    @Test
+    fun `test decode virtual collection`() {
+        checkDecode(VIRTUAL_COLLECTION_STR, VIRTUAL_COLLECTION_MSG)
+    }
+
+    @Test
+    fun `test decode in virtual collection`() {
+        checkDecode(IN_VIRTUAL_COLLECTION_STR, IN_VIRTUAL_COLLECTION_MSG)
+    }
+
+    @Test
+    fun `test encode in virtual collection`() {
+        checkEncode(IN_VIRTUAL_COLLECTION_STR, IN_VIRTUAL_COLLECTION_MSG)
+    }
+
     private fun checkEncode(xml: String, message: Message.Builder) {
         val group =
             codec.encode(MessageGroup.newBuilder().addMessages(AnyMessage.newBuilder().setMessage(message)).build())
@@ -317,8 +338,8 @@ class XmlPipelineCodecTest {
     private fun assertEqualsMessages(expected: Message, actual: Message, checkMetadata: Boolean = false) {
         if (checkMetadata) {
             assertEquals(expected.metadata.messageType, actual.metadata.messageType, "Not equals message types")
-            //assertEquals(expected.metadata.protocol, actual.metadata.protocol, "Not equals protocols")
-            //assertEquals(expected.metadata.id, actual.metadata.id, "Not equals ids")
+            assertEquals(expected.metadata.protocol, actual.metadata.protocol, "Not equals protocols")
+            assertEquals(expected.metadata.id, actual.metadata.id, "Not equals ids")
         }
 
         assertEquals(
@@ -394,7 +415,7 @@ class XmlPipelineCodecTest {
             </TestEmbedded>
         """.trimIndent()
 
-        val EMBEDDED_MSG = message("TestEmbedded").addFields(
+        val EMBEDDED_MSG = parsedMessage("TestEmbedded").addFields(
             "not_embedded", 123,
             "embedded", 456
         )
@@ -403,12 +424,13 @@ class XmlPipelineCodecTest {
             <TestVirtual>
                 <field0>123</field0>
                 <field1>155</field1>
+                <field2>166</field2>
             </TestVirtual>
         """.trimIndent()
 
-        val VIRTUAL_MSG = message("TestVirtual").addFields(
+        val VIRTUAL_MSG = parsedMessage("TestVirtual").addFields(
             "field0", 123,
-            "virtual", message().addField("field1", 155)
+            "virtual", message().addFields("field1", 155, "field2", 166)
         )
 
         val ATTRS_IN_DIFFERENT_PLACE_DECODE_STR = """
@@ -426,7 +448,7 @@ class XmlPipelineCodecTest {
         """.trimIndent()
 
 
-        val ATTRS_IN_DIFFERENT_PLACE_MSG = message("Attributes").addFields(
+        val ATTRS_IN_DIFFERENT_PLACE_MSG = parsedMessage("Attributes").addFields(
             "msgAttrA", 45,
             "msgAttrB", 67,
             "commonAttrA", 54,
@@ -444,7 +466,7 @@ class XmlPipelineCodecTest {
             </TestDuplicateVirtual>
         """.trimIndent()
 
-        val DUPLICATE_FIELD_IN_VIRTUAL_MSG = message("TestDuplicateVirtual")
+        val DUPLICATE_FIELD_IN_VIRTUAL_MSG = parsedMessage("TestDuplicateVirtual")
             .addFields("field0", 1234, "virtual", message().addFields("field0", 1234))
 
         val COLLECTIONS_STR = """
@@ -460,11 +482,53 @@ class XmlPipelineCodecTest {
             </TestCollection>
         """.trimIndent()
 
-        val COLLECTIONS_MSG = message("TestCollection").addFields("collection", listOf(1234, 5678),
+        val COLLECTIONS_MSG = parsedMessage("TestCollection").addFields(
+            "collection", listOf(1234, 5678),
             "collectionMessage", listOf(
                 message().addField("field0", 1011),
                 message().addField("field0", 1213)
-            ))
+            )
+        )
+
+        val VIRTUAL_COLLECTION_STR = """
+            <TestVirtualCollection>
+                <field1>1234</field1>
+                <field2>789</field2>
+                <field1>856</field1>
+                <field2>1100</field2>
+            </TestVirtualCollection>
+        """.trimIndent()
+
+        val VIRTUAL_COLLECTION_MSG = parsedMessage("TestVirtualCollection").addFields(
+            "virtual",
+            listOf(
+                message().addFields("field1", 1234, "field2", 789),
+                message().addFields("field1", 856, "field2", 1100)
+            )
+        )
+
+        val IN_VIRTUAL_COLLECTION_STR = """
+            <TestInVirtualCollection>
+                <field0>123</field0>
+                <field0>456</field0>
+            </TestInVirtualCollection>
+        """.trimIndent()
+
+        val IN_VIRTUAL_COLLECTION_MSG = parsedMessage("TestInVirtualCollection").addFields(
+            "virtual", message().addFields(
+                "field0", listOf(123, 456)
+            )
+        )
+
+            private fun parsedMessage(messageType: String): Message.Builder = message(messageType).apply {
+            metadataBuilder.apply {
+                protocol = "XML"
+                idBuilder.apply {
+                    direction = Direction.FIRST
+                    connectionIdBuilder.sessionAlias = "test_session_alias"
+                }
+            }
+        }
 
     }
 }

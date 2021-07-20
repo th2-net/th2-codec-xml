@@ -24,14 +24,18 @@ import com.exactpro.th2.common.grpc.Message
 import com.exactpro.th2.common.message.get
 import com.exactpro.th2.common.message.getList
 import com.exactpro.th2.common.message.getString
-import com.exactpro.th2.common.value.getList
 import com.exactpro.th2.common.value.getMessage
 import com.exactpro.th2.common.value.getString
 import org.w3c.dom.Document
 import org.w3c.dom.Element
 import org.w3c.dom.Node
 
-class XmlMessageStructureVisitor(private val document: Document, private val node: Node, private val message: Message) :
+class XmlMessageStructureVisitor(
+    private val document: Document,
+    private val node: Node,
+    private val message: Message,
+    private val multiplyParent: Boolean
+) :
     DefaultMessageStructureVisitor() {
 
     override fun visit(fieldName: String, value: String?, fldStruct: IFieldStructure, isDefault: Boolean) {
@@ -47,10 +51,8 @@ class XmlMessageStructureVisitor(private val document: Document, private val nod
             } else {
                 val nodeName = fldStruct.getXmlTagName()
                 val valueNode = node.findNode(nodeName)
-                if (valueNode == null) {
+                if (valueNode == null || multiplyParent) {
                     node.addNode(nodeName, document).setText(fieldValue, document)
-                } else if (valueNode.getText() != fieldValue) {
-                    error("Can not encode field with name '$fieldName' with two different values: ['$fieldValue','${valueNode.getText()}']")
                 }
             }
         } else if (fldStruct.isRequired) {
@@ -99,16 +101,16 @@ class XmlMessageStructureVisitor(private val document: Document, private val nod
             error("Can not find message structure for field with name = $fieldName")
         }
 
-        val listValue = this.message[fieldName]?.getList()
-        if (listValue == null && fldStruct.isRequired) {
-            error("Can not find field with name = $fieldName")
-        }
+        this.message[fieldName]?.let { value ->
+            if (value.hasListValue()) {
+                value.listValue.valuesList.forEach { item ->
+                    val messageValue =
+                        item.getMessage() ?: error("List in field with name '$fieldName' contains not message")
 
-        listValue?.forEach {
-            val messageValue = it.getMessage() ?: error("List in field with name '$fieldName' contains not message")
-
-            visitMessage(fieldName, messageValue, fldStruct, true)
-        }
+                    visitMessage(fieldName, messageValue, fldStruct, true)
+                }
+            }
+        } ?: if (fldStruct.isRequired) error("Can not find field with name = $fieldName")
     }
 
     private fun visitMessage(fieldName: String, message: Message?, fldStruct: IFieldStructure, isCollection: Boolean) {
@@ -122,27 +124,18 @@ class XmlMessageStructureVisitor(private val document: Document, private val nod
 
         val xmlTagName = fldStruct.getXmlTagName()
 
-        if (fldStruct.isEmbedded()) {
-            MessageStructureWriter.WRITER.traverse(
-                XmlMessageStructureVisitor(
-                    document,
-                    if (!isCollection) node.findOrAddNode(xmlTagName, document) else node.addNode(xmlTagName, document),
-                    message
-                ), fldStruct
-            )
-            return
+        val newNode = when {
+            fldStruct.isVirtual() -> node
+            isCollection || multiplyParent -> node.addNode(xmlTagName, document)
+            else -> node.findOrAddNode(xmlTagName, document)
         }
 
         MessageStructureWriter.WRITER.traverse(
             XmlMessageStructureVisitor(
                 document,
-                if (fldStruct.isVirtual()) node else if (!isCollection) node.findOrAddNode(
-                    xmlTagName,
-                    document
-                ) else node.addNode(
-                    xmlTagName, document
-                ),
-                message
+                newNode,
+                message,
+                isCollection
             ), fldStruct
         )
     }

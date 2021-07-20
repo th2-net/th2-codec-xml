@@ -29,7 +29,7 @@ import com.exactpro.th2.common.grpc.Message
 import com.exactpro.th2.common.grpc.MessageGroup
 import com.exactpro.th2.common.grpc.RawMessage
 import com.exactpro.th2.common.grpc.Value
-import com.exactpro.th2.common.message.addField
+import com.exactpro.th2.common.message.hasField
 import com.exactpro.th2.common.message.message
 import com.exactpro.th2.common.message.messageType
 import com.exactpro.th2.common.message.set
@@ -127,8 +127,18 @@ open class XmlPipelineCodec : IPipelineCodec {
         messageStructure: IMessageStructure
     ) {
         messageStructure.fields.forEach { (fieldName, fieldStructure) ->
-            if (fieldStructure.isComplex && (fieldStructure as IMessageStructure).isEmbedded()) {
-                checkDictionaryMessage(fieldLikeNodes, fieldLikeAttrs, fieldStructure)
+            if (fieldStructure.isComplex) {
+                if ((fieldStructure as IMessageStructure).isEmbedded()) {
+                    checkDictionaryMessage(fieldLikeNodes, fieldLikeAttrs, fieldStructure)
+                }
+
+                if (messageStructure.isCollection && fieldStructure.isCollection && (fieldStructure.isEmbedded() || fieldStructure.isVirtual())) {
+                    error("This codec does not support embedded or virtual messages collection with inner collections field")
+                }
+
+                if (fieldStructure.isEmbedded() && fieldStructure.isVirtual()) {
+                    error("This codec does not support embedded and virtual attributes in the same message")
+                }
             } else {
                 val attrName = fieldStructure.getAttrName()
                 if (attrName == null) {
@@ -181,7 +191,7 @@ open class XmlPipelineCodec : IPipelineCodec {
 
         try {
             MessageStructureWriter.WRITER.traverse(
-                XmlMessageStructureVisitor(document, msgNode, message),
+                XmlMessageStructureVisitor(document, msgNode, message, false),
                 messageStructure
             )
         } catch (e: IllegalStateException) {
@@ -335,14 +345,6 @@ open class XmlPipelineCodec : IPipelineCodec {
             val attrName = fieldStructure.getAttrName()
             val list = ArrayList<Node>()
 
-            if (fieldStructure is IMessageStructure && fieldStructure.isVirtual()) {
-                val virtualMessage = message()
-                decodeMessageFields(virtualMessage, node, fieldStructure)
-                messageBuilder.addField(fieldName, virtualMessage)
-
-                return@forEach
-            }
-
             attrName?.let { node.attributes?.getNamedItem(it) }?.also {
                 list.add(it)
             }
@@ -371,6 +373,37 @@ open class XmlPipelineCodec : IPipelineCodec {
         nodes: List<Node>,
         fieldStructure: IFieldStructure
     ) {
+        if (fieldStructure.isComplex && (fieldStructure as IMessageStructure).isVirtual()) {
+            if (fieldStructure.isCollection) {
+                val listValue = ArrayList<Message.Builder>()
+                var virtualMessage = message()
+                for (node in nodes) {
+                    val field = fieldStructure.fields.entries.find { it.value.isValidNode(node) }
+                        ?: throw DecodeException("Can not decode xml node '$node'")
+                    if (virtualMessage.hasField(field.key)) {
+                        listValue.add(virtualMessage)
+                        virtualMessage = message()
+                    }
+                    decodeFieldNode(virtualMessage, field.key, listOf(node), field.value)
+                }
+
+                if (virtualMessage.fieldsCount != 0) {
+                    listValue.add(virtualMessage)
+                }
+
+                message[fieldName] = listValue
+            } else {
+                val virtualMessage = message()
+
+                fieldStructure.fields.forEach { (fldName, fldStructure) ->
+                    decodeFieldNode(virtualMessage, fldName, nodes.filter { fldStructure.isValidNode(it) }, fldStructure)
+                }
+
+                message[fieldName] = virtualMessage
+            }
+            return
+        }
+
         if (fieldStructure.isCollection) {
             val listBuilder = ListValue.newBuilder()
             nodes.forEach {

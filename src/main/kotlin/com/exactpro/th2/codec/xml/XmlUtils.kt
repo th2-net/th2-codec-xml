@@ -62,6 +62,10 @@ fun IFieldStructure.isValidNode(node: Node): Boolean {
         return false
     }
 
+    if (isComplex && (this as IMessageStructure).isVirtual()) {
+        return fields.containsKey(node.nodeName)
+    }
+
     for (i in 0 until node.attributes.length) {
         val attr = node.attributes.item(i)
         if (this.attributes[XmlPipelineCodec.XML_ATTRIBUTE_NAME_ATTRIBUTE]?.value == attr.nodeName
