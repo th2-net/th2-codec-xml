@@ -40,23 +40,32 @@ class XmlMessageStructureVisitor(
 
     override fun visit(fieldName: String, value: String?, fldStruct: IFieldStructure, isDefault: Boolean) {
         val fieldValue = value ?: message.getString(fieldName) ?: fldStruct.getDefaultValue<String?>()
-        if (fieldValue != null) {
-            val attrName = fldStruct.getAttrName()
-            if (attrName != null) {
-                if (node is Element) {
-                    node.setAttribute(attrName, fieldValue)
-                } else {
-                    error("Field node is not element. Field name = $fieldName")
-                }
+
+        val attrName = fldStruct.getAttrName()
+        if (attrName != null) {
+            if (fieldValue == null) {
+                return
+            }
+
+            if (node is Element) {
+                node.setAttribute(attrName, fieldValue)
             } else {
-                val nodeName = fldStruct.getXmlTagName()
-                val valueNode = node.findNode(nodeName)
-                if (valueNode == null || multiplyParent) {
-                    node.addNode(nodeName, document).setText(fieldValue, document)
+                error("Field node is not element. Field name = $fieldName")
+            }
+        } else {
+            val nodeName = fldStruct.getXmlTagName()
+            val valueNode = node.findNode(nodeName)
+            if (valueNode == null || multiplyParent) {
+                if (fieldValue != null || fldStruct.isSupportEmptyTag()) {
+                    node.addNode(nodeName, document).also { newNode ->
+                        if (fieldValue != null) {
+                            newNode.setText(fieldValue, document)
+                        }
+                    }
+                } else if (fldStruct.isRequired) {
+                    error("Can not find field with name = $fieldName")
                 }
             }
-        } else if (fldStruct.isRequired) {
-            error("Can not find field with name = $fieldName")
         }
     }
 
@@ -118,7 +127,7 @@ class XmlMessageStructureVisitor(
             error("Can not find message structure for field with name = $fieldName")
         }
 
-        if (message == null || message.fieldsMap.keys.intersect(fldStruct.fields.keys).isEmpty()) {
+        if (message == null || (!fldStruct.isSupportEmptyTag() && message.fieldsMap.keys.intersect(fldStruct.fields.keys).isEmpty())) {
             return
         }
 

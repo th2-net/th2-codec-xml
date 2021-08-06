@@ -582,6 +582,11 @@ open class XmlPipelineCodec : IPipelineCodec {
         const val XML_VIRTUAL_ATTRIBUTE = "Virtual"
 
         /**
+         * Boolean attribute. If true can generate empty tag if message if empty.
+         */
+        const val XML_EMPTY_TAG_SUPPORT = "XmlEmptyTagSupport";
+
+        /**
          * XPath expression for find xml nodes. It doesn't work for encoding
          */
         const val XML_X_PATH_EXPRESSION_ATTRIBUTE = "XPath"
