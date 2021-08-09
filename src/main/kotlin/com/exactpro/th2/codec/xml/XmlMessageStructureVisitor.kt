@@ -47,11 +47,9 @@ class XmlMessageStructureVisitor(
                 return
             }
 
-            if (node is Element) {
-                node.setAttribute(attrName, fieldValue)
-            } else {
-                error("Field node is not element. Field name = $fieldName")
-            }
+            check(node is Element) { "Field node is not element. Field name = $fieldName" }
+
+            node.setAttribute(attrName, fieldValue)
         } else {
             val nodeName = fldStruct.getXmlTagName()
             val valueNode = node.findNode(nodeName)
@@ -127,7 +125,7 @@ class XmlMessageStructureVisitor(
             error("Can not find message structure for field with name = $fieldName")
         }
 
-        if (message == null || (!fldStruct.isSupportEmptyTag() && message.fieldsMap.keys.intersect(fldStruct.fields.keys).isEmpty())) {
+        if (message == null || (!fldStruct.isSupportEmptyTag() && fldStruct.fields.keys.none { it in message.fieldsMap })) {
             return
         }
 

@@ -440,7 +440,9 @@ open class XmlPipelineCodec : IPipelineCodec {
     ): Value {
         if (fieldStructure.isComplex && fieldStructure is IMessageStructure) {
             try {
-                return decodeMessageNode(node, fieldStructure).toValue()
+                val fieldValue = message()
+                decodeMessageFields(fieldValue, node, fieldStructure)
+                return fieldValue.toValue()
             } catch (e: DecodeException) {
                 throw DecodeException("Can not decode field with name '${fieldStructure.name}'", e)
             }
@@ -582,7 +584,7 @@ open class XmlPipelineCodec : IPipelineCodec {
         const val XML_VIRTUAL_ATTRIBUTE = "Virtual"
 
         /**
-         * Boolean attribute. If true can generate empty tag if message if empty.
+         * Boolean attribute. If `true` - an empty tag would be generated if message is empty.
          */
         const val XML_EMPTY_TAG_SUPPORT = "XmlEmptyTagSupport";
 
