@@ -257,5 +257,13 @@
             <attribute name="Virtual" type="java.lang.Boolean">true</attribute>
             <field name="field0" type="java.lang.String" isCollection="true"/>
         </message>
+
+        <message name="SupportEmptyTagMessage">
+            <field name="SupportEmptyTagMessagePart" reference="M_SupportEmptyTagMessagePart"/>
+        </message>
+        <message name="SupportEmptyTagMessagePart" id="M_SupportEmptyTagMessagePart">
+            <attribute name="XmlEmptyTagSupport" type="java.lang.Boolean">true</attribute>
+            <field name="a" type="java.lang.String"/>
+        </message>
     </messages>
 </dictionary>

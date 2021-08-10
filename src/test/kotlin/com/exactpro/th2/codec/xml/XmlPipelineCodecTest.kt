@@ -317,6 +317,16 @@ class XmlPipelineCodecTest {
         checkEncode(IN_VIRTUAL_COLLECTION_STR, IN_VIRTUAL_COLLECTION_MSG)
     }
 
+    @Test
+    fun `test decode empty xml tag support`() {
+        checkDecode(EMPTY_XML_TAG_SUPPORT_STR, EMPTY_XML_TAG_SUPPORT_MSG)
+    }
+
+    @Test
+    fun `test encode empty xml tag support`() {
+        checkEncode(EMPTY_XML_TAG_SUPPORT_STR, EMPTY_XML_TAG_SUPPORT_MSG)
+    }
+
     private fun checkEncode(xml: String, message: Message.Builder) {
         val group =
             codec.encode(MessageGroup.newBuilder().addMessages(AnyMessage.newBuilder().setMessage(message)).build())
@@ -519,6 +529,15 @@ class XmlPipelineCodecTest {
                 "field0", listOf(123, 456)
             )
         )
+
+        val EMPTY_XML_TAG_SUPPORT_STR = """
+            <SupportEmptyTagMessage>
+                <SupportEmptyTagMessagePart/>
+            </SupportEmptyTagMessage>
+        """.trimIndent()
+
+        val EMPTY_XML_TAG_SUPPORT_MSG = parsedMessage("SupportEmptyTagMessage")
+            .addField("SupportEmptyTagMessagePart", message())
 
             private fun parsedMessage(messageType: String): Message.Builder = message(messageType).apply {
             metadataBuilder.apply {

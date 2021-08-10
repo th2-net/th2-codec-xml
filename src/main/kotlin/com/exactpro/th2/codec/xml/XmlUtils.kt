@@ -78,6 +78,7 @@ fun IFieldStructure.isValidNode(node: Node): Boolean {
     return node.nodeName == this.getXmlTagName()
 }
 
+fun IFieldStructure.isSupportEmptyTag(): Boolean = attributes[XmlPipelineCodec.XML_EMPTY_TAG_SUPPORT]?.getCastValue() ?: false
 fun IMessageStructure.isEmbedded() : Boolean = attributes[XmlPipelineCodec.EMBEDDED_ATTRIBUTE]?.getCastValue() ?: false
 fun IMessageStructure.isVirtual() : Boolean = attributes[XmlPipelineCodec.XML_VIRTUAL_ATTRIBUTE]?.getCastValue() ?: false
 
