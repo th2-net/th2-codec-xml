@@ -202,7 +202,7 @@ open class XmlPipelineCodec : IPipelineCodec {
         writeXml(document, xmlMsgType, output)
 
         return RawMessage.newBuilder().apply {
-            mergeParentEventId(message.parentEventId)
+            parentEventId = message.parentEventId
             metadataBuilder.putAllProperties(message.metadata.propertiesMap)
             metadataBuilder.protocol = protocol
             metadataBuilder.id = message.metadata.id
@@ -250,7 +250,7 @@ open class XmlPipelineCodec : IPipelineCodec {
                             xmlNode,
                             msgStructure
                         ).also { builder ->
-                            builder.mergeParentEventId(rawMessage.parentEventId)
+                            builder.parentEventId = rawMessage.parentEventId
                             builder.metadataBuilder.also { msgMetadata ->
                                 rawMessage.metadata.also { rawMetadata ->
                                     msgMetadata.id = rawMetadata.id

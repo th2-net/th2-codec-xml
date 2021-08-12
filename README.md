@@ -2,7 +2,7 @@
 
 ## Release notes
 
-### 0.0.5
+### 0.1.0
 + Parent id loss fix
 
 ### 0.0.4
