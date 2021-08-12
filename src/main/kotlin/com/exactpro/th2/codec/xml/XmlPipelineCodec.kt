@@ -202,6 +202,7 @@ open class XmlPipelineCodec : IPipelineCodec {
         writeXml(document, xmlMsgType, output)
 
         return RawMessage.newBuilder().apply {
+            mergeParentEventId(message.parentEventId)
             metadataBuilder.putAllProperties(message.metadata.propertiesMap)
             metadataBuilder.protocol = protocol
             metadataBuilder.id = message.metadata.id
@@ -249,6 +250,7 @@ open class XmlPipelineCodec : IPipelineCodec {
                             xmlNode,
                             msgStructure
                         ).also { builder ->
+                            builder.mergeParentEventId(rawMessage.parentEventId)
                             builder.metadataBuilder.also { msgMetadata ->
                                 rawMessage.metadata.also { rawMetadata ->
                                     msgMetadata.id = rawMetadata.id
@@ -586,7 +588,7 @@ open class XmlPipelineCodec : IPipelineCodec {
         /**
          * Boolean attribute. If `true` - an empty tag would be generated if message is empty.
          */
-        const val XML_EMPTY_TAG_SUPPORT = "XmlEmptyTagSupport";
+        const val XML_EMPTY_TAG_SUPPORT = "XmlEmptyTagSupport"
 
         /**
          * XPath expression for find xml nodes. It doesn't work for encoding

@@ -2,6 +2,9 @@
 
 ## Release notes
 
+### 0.0.5
++ Parent id loss fix
+
 ### 0.0.4
 + Added `XmlEmptyTagSupport` attribute for fields that can generate empty tag
 
