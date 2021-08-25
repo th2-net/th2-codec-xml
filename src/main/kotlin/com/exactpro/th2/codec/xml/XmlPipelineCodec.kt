@@ -29,23 +29,22 @@ import com.exactpro.th2.common.grpc.Message
 import com.exactpro.th2.common.grpc.MessageGroup
 import com.exactpro.th2.common.grpc.RawMessage
 import com.exactpro.th2.common.grpc.Value
-import com.exactpro.th2.common.message.hasField
-import com.exactpro.th2.common.message.message
-import com.exactpro.th2.common.message.messageType
-import com.exactpro.th2.common.message.set
-import com.exactpro.th2.common.message.toJson
+import com.exactpro.th2.common.message.*
 import com.exactpro.th2.common.value.add
 import com.exactpro.th2.common.value.toValue
 import com.google.protobuf.ByteString
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.w3c.dom.Document
+import org.w3c.dom.NamedNodeMap
 import org.w3c.dom.Node
+import org.w3c.dom.NodeList
 import org.xml.sax.SAXException
-import java.io.ByteArrayInputStream
-import java.io.IOException
-import java.io.OutputStream
+import java.io.*
 import java.nio.charset.Charset
+import java.util.zip.ZipEntry
+import java.util.zip.ZipInputStream
+import javax.xml.XMLConstants
 import javax.xml.parsers.DocumentBuilder
 import javax.xml.parsers.DocumentBuilderFactory
 import javax.xml.parsers.ParserConfigurationException
@@ -56,6 +55,9 @@ import javax.xml.transform.TransformerException
 import javax.xml.transform.TransformerFactory
 import javax.xml.transform.dom.DOMSource
 import javax.xml.transform.stream.StreamResult
+import javax.xml.transform.stream.StreamSource
+import javax.xml.validation.SchemaFactory
+import javax.xml.validation.Validator
 import javax.xml.xpath.XPath
 import javax.xml.xpath.XPathFactory
 
@@ -116,6 +118,223 @@ open class XmlPipelineCodec : IPipelineCodec {
             }
         }
     }
+
+
+
+    // new code
+
+    fun decodePair(pair: Pair<Node, String>): Message{
+        val message = message()
+        pair.first.childNodes.forEach { node ->
+            if (node.prefix == pair.second) {
+                if (node.hasChildNodes()) {
+                    message.addFields(node.nodeName, decodePair(Pair(node, node.prefix)))
+                }
+                else{
+                    message.addField(node.nodeName, node.getText())
+                }
+            }
+        }
+        return message.build()
+    }
+
+    /*
+    fun toXML(doc: Document, message: Message) {
+        val map = message.fieldsMap
+
+        map.forEach {
+            val nodeName = it.key
+            val node = doc.createTextNode(nodeName)
+            defineTypeOfValue(it.value, node, doc)
+        }
+    }
+*/
+
+    private fun toXML(parentNode: Node, doc: Document, message: Message) {
+        val map = message.fieldsMap
+
+        map.forEach {
+            val nodeName = it.key
+            val node = doc.createTextNode(nodeName)
+            createAccordingValueType(it.value, node, doc)
+            parentNode.appendChild(node)
+        }
+    }
+
+    private fun createAccordingValueType(myValue: Value, node: Node, doc: Document){
+        if (myValue.hasListValue()) {
+            myValue.allFields.forEach {
+                val newNode = doc.createTextNode(it.key.name)
+                node.appendChild(newNode)
+                createAccordingValueType(it.value.toValue(), newNode, doc)
+            }
+        }
+        if (myValue.hasMessageValue()){
+            toXML(node, doc, myValue.messageValue)
+        }
+        else{
+            node.nodeValue = myValue.simpleValue
+        }
+    }
+
+    fun encodeMessage(message: Message): RawMessage? {
+        val doc: Document = DOCUMENT_BUILDER.get().newDocument()
+        val rootNode = doc.createTextNode("root")
+
+        toXML(rootNode, doc, message)
+
+        val transformerFactory = TransformerFactory.newInstance()
+        val transformer = transformerFactory.newTransformer()
+        val source = DOMSource(doc)
+        val result = StreamResult(File("C:\\testing.xml"))
+        transformer.transform(source, result)
+
+        val output = ByteString.newOutput()
+        transformer.transform(DOMSource(doc), StreamResult(output.writer(xmlCharset)))
+
+        return RawMessage.newBuilder().apply {
+            parentEventId = message.parentEventId
+            metadataBuilder.putAllProperties(message.metadata.propertiesMap)
+            metadataBuilder.protocol = protocol
+            metadataBuilder.id = message.metadata.id
+            metadataBuilder.timestamp = message.metadata.timestamp
+            body = output.toByteString()
+        }.build()
+    }
+
+    fun validate(dirty: Boolean, xmlSetPath: String, xsdSetPath: String, bufferPath: String): java.util.ArrayList<Pair<Node, String>> {
+        val zipXML = ZipInputStream(FileInputStream(xmlSetPath))
+        var entry: ZipEntry? = null
+        var nameXML: String
+
+        val attributes: java.util.ArrayList<Node> = java.util.ArrayList()
+        val pairList = java.util.ArrayList<Pair<Node, String>>()
+
+        while (zipXML.getNextEntry()?.also { entry = it } != null) {
+            nameXML = entry!!.getName()
+            println("XML: " + nameXML)
+            val documentXML: Document = readZIP(bufferPath, nameXML, zipXML)
+
+            for (i in 0 until documentXML.documentElement.attributes.length){
+                attributes.add(documentXML.documentElement.attributes.item(i))
+            }
+            fun getAttributes(nodeList: NodeList){
+                try {
+                    nodeList.toList().filter { it.nodeType == Node.ELEMENT_NODE }.forEach { it ->
+                        it.attributes.forEach {
+                            attributes.add(it)
+                            //println("attributes: " + it.nodeValue)
+                        }
+                        if (it.hasChildNodes()) {
+                            getAttributes(it.childNodes)
+                        }
+                    }
+                }
+                catch (e: NullPointerException){
+                }
+            }
+            val childNodes: NodeList = documentXML.documentElement.childNodes
+            getAttributes(childNodes)
+
+
+            println("\nAll attributes:\n")
+            attributes.forEach {println("${it.nodeName}='${it.nodeValue}'")}
+            println()
+
+            val zipXSD = ZipInputStream(FileInputStream(xsdSetPath))
+            var entryXSD: ZipEntry? = null
+            var nameXSD: String
+
+            while (zipXSD.getNextEntry()?.also { entryXSD = it } != null) {
+                nameXSD = entryXSD!!.getName()
+                println("XML: $nameXML")
+                println("XSD: $nameXSD")
+
+                val documentXSD: Document = readZIP(bufferPath, nameXSD, zipXSD)
+
+                println(documentXSD.documentElement.getAttribute("targetNamespace"))
+                println()
+                for (attribute in attributes) {
+                    val factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI)
+                    val schema = factory.newSchema(File(nameXSD))
+                    if(attribute.nodeValue == documentXSD.documentElement.getAttribute("targetNamespace")){
+                        try {
+                            val validator: Validator = schema.newValidator()
+                            validator.errorHandler = XsdErrorHandler(dirty)
+
+                            validator.validate(StreamSource(File(nameXML)))
+                            println("Validation of $nameXML with $nameXSD finished")
+                            println()
+
+                            val matchedNodes = documentXML.documentElement.getElementsByTagNameNS(attribute.nodeValue, "*")
+                            matchedNodes.forEach { it ->
+                                val node = it
+                                it.attributes.forEach {
+                                    if(documentXSD.documentElement.getAttribute("targetNamespace") == it.nodeValue){
+                                        pairList.add(Pair(node, node.prefix))
+                                    }
+                                }
+                            }
+                            documentXML.documentElement.attributes.forEach {
+                                val node = documentXML.documentElement
+                                if(documentXSD.documentElement.getAttribute("targetNamespace") == it.nodeValue){
+                                    pairList.add(Pair(node, node.prefix))
+                                }
+                            }
+                            break
+                        } catch (e: IOException) {
+                            // handle exception while reading source
+                        } catch (e: SAXException) {
+                            //println(e.message)
+                            System.err.println(e.message)
+                            //e.printStackTrace()
+                        }
+
+                    }
+                }
+                zipXSD.closeEntry()
+            }
+
+            attributes.clear()
+            pairList.forEach { println(it) }
+            pairList.clear()
+            println("-----------------------------------------------------\n")
+        }
+        zipXML.closeEntry()
+        return pairList
+    }
+
+    private fun readZIP(filePath: String, fileName: String, zip: ZipInputStream): Document {
+        // чтение zip и запись просто файла
+        val bufferFile = FileOutputStream(filePath + fileName)
+        var c: Int = zip.read()
+        while (c != -1) {
+            bufferFile.write(c)
+            c = zip.read()
+        }
+        // чтение просто файла
+        val file = File(filePath + fileName)
+
+        val factory = DocumentBuilderFactory.newInstance()
+        factory.isNamespaceAware = true
+        val builder = factory.newDocumentBuilder()
+        return builder.parse(file)
+    }
+
+    private fun NodeList.forEach(func: (Node) -> Unit) {
+        for (i in 0 until length) {
+            func(item(i))
+        }
+    }
+    private fun NamedNodeMap.forEach(func: (Node) -> Unit) {
+        for (i in 0 until length) {
+            func(item(i))
+        }
+    }
+
+    // end of new code
+
+
 
     private fun checkDictionaryMessage(msgStructure: IMessageStructure) {
         checkDictionaryMessage(HashMap(), HashMap(), msgStructure)

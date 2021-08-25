@@ -37,6 +37,23 @@ import kotlin.test.fail
 class XmlPipelineCodecTest {
 
     @Test
+    fun `test parsing multiple xml, schemas,namespaces`() {
+        val dirty = false
+        val bufferPath = "C:\\Users\\Саня\\IdeaProjects\\xmlValidatorWithGradle\\"
+        val xmlSetPath = "C:\\Users\\Саня\\IdeaProjects\\xmlValidatorWithGradle\\sample-resourses\\XMLset.zip"
+        val xsdSetPath = "C:\\Users\\Саня\\IdeaProjects\\xmlValidatorWithGradle\\sample-resourses\\XSDset.zip"
+
+        val xmlPipelineCodec = XmlPipelineCodec()
+
+        val pairList = xmlPipelineCodec.validate(dirty, xmlSetPath, xsdSetPath, bufferPath)
+        pairList.forEach {
+            val message = xmlPipelineCodec.decodePair(it)
+            println("Message :\n" + message.toJson())
+            val rawMessage = xmlPipelineCodec.encodeMessage(message)!!
+            assertEquals(it.first.getText(), rawMessage.body.toString(Charsets.UTF_8))
+        }
+    }
+    @Test
     fun `test wrong dictionary`() {
         try {
             XmlPipelineCodec().init(
