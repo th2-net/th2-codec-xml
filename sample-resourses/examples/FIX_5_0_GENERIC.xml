@@ -1,0 +1,366 @@
+<?xml version="1.0" encoding="UTF-8"?><!--
+  ~ Copyright 2009-2018 Exactpro (Exactpro Systems Limited)
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<!--
+			Warning!!! This file is generated from FIX dictionary.
+			Changes possibly will be overwritten at next build.
+		-->
+<dictionary xmlns="http://exactprosystems.com/dictionary" name="FIX_5_0_GENERIC">
+    <fields>
+        <field id="field-SessionStatus" name="SessionStatus" type="java.lang.Integer">
+            <attribute name="tag" type="java.lang.Integer">1409</attribute>
+            <attribute name="fixtype" type="java.lang.String">INT</attribute>
+            <value name="SESSION_ACTIVE">0</value>
+            <value name="PASSWORD_DUE_TO_EXPIRE">2</value>
+            <value name="NEW_PASSWORD_DOES_NOT_COMPLY_WITH_POLICY">3</value>
+            <value name="SESSION_LOGOUT_COMPLETE">4</value>
+            <value name="ACCOUNT_LOCKED">6</value>
+            <value name="LOGONS_ARE_NOT_ALLOWED_AT_THIS_TIME">7</value>
+            <value name="PASSWORD_EXPIRED">8</value>
+            <value name="OTHER">100</value>
+            <value name="LOGOUT_DUE_TO_SESSION_LEVEL_FAILURE">101</value>
+            <value name="LOGOUT_BY_SERVICE_DESK">102</value>
+        </field>
+        <field id="field-Account" name="Account" type="java.lang.String">
+            <attribute name="tag" type="java.lang.Integer">1</attribute>
+            <attribute name="fixtype" type="java.lang.String">STRING</attribute>
+        </field>
+        <field id="field-AdvId" name="AdvId" type="java.lang.String">
+            <attribute name="tag" type="java.lang.Integer">2</attribute>
+            <attribute name="fixtype" type="java.lang.String">STRING</attribute>
+        </field>
+        <field id="field-AdvRefID" name="AdvRefID" type="java.lang.String">
+            <attribute name="tag" type="java.lang.Integer">3</attribute>
+            <attribute name="fixtype" type="java.lang.String">STRING</attribute>
+        </field>
+        <field id="field-AdvSide" name="AdvSide" type="java.lang.Character">
+            <attribute name="tag" type="java.lang.Integer">4</attribute>
+            <attribute name="fixtype" type="java.lang.String">CHAR</attribute>
+            <value name="BUY">B</value>
+            <value name="SELL">S</value>
+            <value name="CROSS">X</value>
+            <value name="TRADE">T</value>
+        </field>
+        <field id="field-AdvTransType" name="AdvTransType" type="java.lang.String">
+            <attribute name="tag" type="java.lang.Integer">5</attribute>
+            <attribute name="fixtype" type="java.lang.String">STRING</attribute>
+            <value name="NEW">N</value>
+            <value name="CANCEL">C</value>
+            <value name="REPLACE">R</value>
+        </field>
+        <field id="field-AvgPx" name="AvgPx" type="java.math.BigDecimal">
+            <attribute name="tag" type="java.lang.Integer">6</attribute>
+            <attribute name="fixtype" type="java.lang.String">PRICE</attribute>
+        </field>
+        <field id="field-BeginSeqNo" name="BeginSeqNo" type="java.lang.Integer">
+            <attribute name="tag" type="java.lang.Integer">7</attribute>
+            <attribute name="fixtype" type="java.lang.String">SEQNUM</attribute>
+        </field>
+        <field id="field-BeginString" name="BeginString" type="java.lang.String">
+            <attribute name="tag" type="java.lang.Integer">8</attribute>
+            <attribute name="fixtype" type="java.lang.String">STRING</attribute>
+        </field>
+        <field id="field-BodyLength" name="BodyLength" type="java.lang.Integer">
+            <attribute name="tag" type="java.lang.Integer">9</attribute>
+            <attribute name="fixtype" type="java.lang.String">LENGTH</attribute>
+        </field>
+        <field id="field-CheckSum" name="CheckSum" type="java.lang.String">
+            <attribute name="tag" type="java.lang.Integer">10</attribute>
+            <attribute name="fixtype" type="java.lang.String">STRING</attribute>
+        </field>
+        <field id="field-ClOrdID" name="ClOrdID" type="java.lang.String">
+            <attribute name="tag" type="java.lang.Integer">11</attribute>
+            <attribute name="fixtype" type="java.lang.String">STRING</attribute>
+        </field>
+        <field id="field-Commission" name="Commission" type="java.math.BigDecimal">
+            <attribute name="tag" type="java.lang.Integer">12</attribute>
+            <attribute name="fixtype" type="java.lang.String">AMT</attribute>
+        </field>
+        <field id="field-CommType" name="CommType" type="java.lang.Character">
+            <attribute name="tag" type="java.lang.Integer">13</attribute>
+            <attribute name="fixtype" type="java.lang.String">CHAR</attribute>
+            <value name="PER_UNIT">1</value>
+            <value name="PERCENTAGE">2</value>
+            <value name="ABSOLUTE">3</value>
+            <value name="PERCENTAGE_WAIVED_CASH_DISCOUNT">4</value>
+            <value name="PERCENTAGE_WAIVED_ENHANCED_UNITS">5</value>
+            <value name="POINTS_PER_BOND_OR_OR_CONTRACT">6</value>
+        </field>
+        <field id="field-CumQty" name="CumQty" type="java.math.BigDecimal">
+            <attribute name="tag" type="java.lang.Integer">14</attribute>
+            <attribute name="fixtype" type="java.lang.String">QTY</attribute>
+        </field>
+        <field id="field-Currency" name="Currency" type="java.lang.String">
+            <attribute name="tag" type="java.lang.Integer">15</attribute>
+            <attribute name="fixtype" type="java.lang.String">CURRENCY</attribute>
+        </field>
+        <field id="field-EndSeqNo" name="EndSeqNo" type="java.lang.Integer">
+            <attribute name="tag" type="java.lang.Integer">16</attribute>
+            <attribute name="fixtype" type="java.lang.String">SEQNUM</attribute>
+        </field>
+        <field id="field-ExecID" name="ExecID" type="java.lang.String">
+            <attribute name="tag" type="java.lang.Integer">17</attribute>
+            <attribute name="fixtype" type="java.lang.String">STRING</attribute>
+        </field>
+        <field id="field-ExecInst" name="ExecInst" type="java.lang.String">
+            <attribute name="tag" type="java.lang.Integer">18</attribute>
+            <attribute name="fixtype" type="java.lang.String">MULTIPLECHARVALUE</attribute>
+            <value name="STAY_ON_OFFERSIDE">0</value>
+            <value name="NOT_HELD">1</value>
+            <value name="WORK">2</value>
+            <value name="GO_ALONG">3</value>
+            <value name="OVER_THE_DAY">4</value>
+            <value name="HELD">5</value>
+            <value name="PARTICIPATE_DONT_INITIATE">6</value>
+            <value name="STRICT_SCALE">7</value>
+            <value name="TRY_TO_SCALE">8</value>
+            <value name="STAY_ON_BIDSIDE">9</value>
+            <value name="NO_CROSS">A</value>
+            <value name="OK_TO_CROSS">B</value>
+            <value name="CALL_FIRST">C</value>
+            <value name="PERCENT_OF_VOLUME">D</value>
+            <value name="DO_NOT_INCREASE">E</value>
+            <value name="DO_NOT_REDUCE">F</value>
+            <value name="ALL_OR_NONE">G</value>
+            <value name="REINSTATE_ON_SYSTEM_FAILURE">H</value>
+            <value name="INSTITUTIONS_ONLY">I</value>
+            <value name="REINSTATE_ON_TRADING_HALT">J</value>
+            <value name="CANCEL_ON_TRADING_HALT">K</value>
+            <value name="LAST_PEG">L</value>
+            <value name="MID_PRICE">M</value>
+            <value name="NON_NEGOTIABLE">N</value>
+            <value name="OPENING_PEG">O</value>
+            <value name="MARKET_PEG">P</value>
+            <value name="CANCEL_ON_SYSTEM_FAILURE">Q</value>
+            <value name="PRIMARY_PEG">R</value>
+            <value name="SUSPEND">S</value>
+            <value name="FIXED_PEG_TO_LOCAL_BEST_BID_OR_OFFER_AT_TIME_OF_ORDER">T</value>
+            <value name="CUSTOMER_DISPLAY_INSTRUCTION">U</value>
+            <value name="NETTING">V</value>
+            <value name="PEG_TO_VWAP">W</value>
+            <value name="TRADE_ALONG">X</value>
+            <value name="TRY_TO_STOP">Y</value>
+            <value name="CANCEL_IF_NOT_BEST">Z</value>
+            <value name="TRAILING_STOP_PEG">a</value>
+            <value name="STRICT_LIMIT">b</value>
+            <value name="IGNORE_PRICE_VALIDITY_CHECKS">c</value>
+            <value name="PEG_TO_LIMIT_PRICE">d</value>
+            <value name="WORK_TO_TARGET_STRATEGY">e</value>
+            <value name="INTERMARKET_SWEEP">f</value>
+            <value name="EXTERNAL_ROUTING_ALLOWED">g</value>
+            <value name="EXTERNAL_ROUTING_NOT_ALLOWED">h</value>
+            <value name="IMBALANCE_ONLY">i</value>
+            <value name="SINGLE_EXECUTION_REQUESTED_FOR_BLOCK_TRADE">j</value>
+            <value name="BEST_EXECUTION">k</value>
+        </field>
+        <field id="field-ExecRefID" name="ExecRefID" type="java.lang.String">
+            <attribute name="tag" type="java.lang.Integer">19</attribute>
+            <attribute name="fixtype" type="java.lang.String">STRING</attribute>
+        </field>
+        <field id="field-ExecTransType" name="ExecTransType" type="java.lang.Character">
+            <attribute name="tag" type="java.lang.Integer">20</attribute>
+            <attribute name="fixtype" type="java.lang.String">CHAR</attribute>
+            <value name="NEW">0</value>
+            <value name="CANCEL">1</value>
+            <value name="CORRECT">2</value>
+            <value name="STATUS">3</value>
+        </field>
+        <field id="field-HandlInst" name="HandlInst" type="java.lang.Character">
+            <attribute name="tag" type="java.lang.Integer">21</attribute>
+            <attribute name="fixtype" type="java.lang.String">CHAR</attribute>
+            <value name="AUTOMATED_EXECUTION_ORDER_PRIVATE">1</value>
+            <value name="AUTOMATED_EXECUTION_ORDER_PUBLIC">2</value>
+            <value name="MANUAL_ORDER">3</value>
+        </field>
+        <field id="field-SecurityIDSource" name="SecurityIDSource" type="java.lang.String">
+            <attribute name="tag" type="java.lang.Integer">22</attribute>
+            <attribute name="fixtype" type="java.lang.String">STRING</attribute>
+            <value name="CUSIP">1</value>
+            <value name="SEDOL">2</value>
+            <value name="QUIK">3</value>
+            <value name="ISIN_NUMBER">4</value>
+            <value name="RIC_CODE">5</value>
+            <value name="ISO_CURRENCY_CODE">6</value>
+            <value name="ISO_COUNTRY_CODE">7</value>
+            <value name="EXCHANGE_SYMBOL">8</value>
+            <value name="CONSOLIDATED_TAPE_ASSOCIATION">9</value>
+            <value name="BLOOMBERG_SYMBOL">A</value>
+            <value name="WERTPAPIER">B</value>
+            <value name="DUTCH">C</value>
+            <value name="VALOREN">D</value>
+            <value name="SICOVAM">E</value>
+            <value name="BELGIAN">F</value>
+            <value name="COMMON">G</value>
+            <value name="CLEARING_HOUSE_CLEARING_ORGANIZATION">H</value>
+            <value name="ISDA_FPML_PRODUCT_SPECIFICATION">I</value>
+            <value name="OPTIONS_PRICE_REPORTING_AUTHORITY">J</value>
+            <value name="ISDA_FPML_PRODUCT_URL">K</value>
+            <value name="LETTER_OF_CREDIT">L</value>
+        </field>
+        <field id="field-IOIid" name="IOIid" type="java.lang.String">
+            <attribute name="tag" type="java.lang.Integer">23</attribute>
+            <attribute name="fixtype" type="java.lang.String">STRING</attribute>
+        </field>
+        <field id="field-IOIQltyInd" name="IOIQltyInd" type="java.lang.Character">
+            <attribute name="tag" type="java.lang.Integer">25</attribute>
+            <attribute name="fixtype" type="java.lang.String">CHAR</attribute>
+            <value name="LOW">L</value>
+            <value name="MEDIUM">M</value>
+            <value name="HIGH">H</value>
+        </field>
+        <field id="field-IOIRefID" name="IOIRefID" type="java.lang.String">
+            <attribute name="tag" type="java.lang.Integer">26</attribute>
+            <attribute name="fixtype" type="java.lang.String">STRING</attribute>
+        </field>
+        <field id="field-IOIQty" name="IOIQty" type="java.lang.String">
+            <attribute name="tag" type="java.lang.Integer">27</attribute>
+            <attribute name="fixtype" type="java.lang.String">STRING</attribute>
+            <value name="_1000000000">0</value>
+            <value name="SMALL">S</value>
+            <value name="MEDIUM">M</value>
+            <value name="LARGE">L</value>
+            <value name="UNDISCLOSED_QUANTITY">U</value>
+        </field>
+        <field id="field-IOITransType" name="IOITransType" type="java.lang.Character">
+            <attribute name="tag" type="java.lang.Integer">28</attribute>
+            <attribute name="fixtype" type="java.lang.String">CHAR</attribute>
+            <value name="NEW">N</value>
+            <value name="CANCEL">C</value>
+            <value name="REPLACE">R</value>
+        </field>
+        <field id="field-LastCapacity" name="LastCapacity" type="java.lang.Character">
+            <attribute name="tag" type="java.lang.Integer">29</attribute>
+            <attribute name="fixtype" type="java.lang.String">CHAR</attribute>
+            <value name="AGENT">1</value>
+            <value name="CROSS_AS_AGENT">2</value>
+            <value name="CROSS_AS_PRINCIPAL">3</value>
+            <value name="PRINCIPAL">4</value>
+        </field>
+        <field id="field-LastMkt" name="LastMkt" type="java.lang.String">
+            <attribute name="tag" type="java.lang.Integer">30</attribute>
+            <attribute name="fixtype" type="java.lang.String">EXCHANGE</attribute>
+        </field>
+        <field id="field-LastPx" name="LastPx" type="java.math.BigDecimal">
+            <attribute name="tag" type="java.lang.Integer">31</attribute>
+            <attribute name="fixtype" type="java.lang.String">PRICE</attribute>
+        </field>
+        <field id="field-LastQty" name="LastQty" type="java.math.BigDecimal">
+            <attribute name="tag" type="java.lang.Integer">32</attribute>
+            <attribute name="fixtype" type="java.lang.String">QTY</attribute>
+        </field>
+        <field id="field-NoLinesOfText" name="NoLinesOfText" type="java.lang.Integer">
+            <attribute name="tag" type="java.lang.Integer">33</attribute>
+            <attribute name="fixtype" type="java.lang.String">NUMINGROUP</attribute>
+        </field>
+        <field id="field-MsgSeqNum" name="MsgSeqNum" type="java.lang.Integer">
+            <attribute name="tag" type="java.lang.Integer">34</attribute>
+            <attribute name="fixtype" type="java.lang.String">SEQNUM</attribute>
+        </field>
+        <field id="field-MsgType" name="MsgType" type="java.lang.String">
+            <attribute name="tag" type="java.lang.Integer">35</attribute>
+            <attribute name="fixtype" type="java.lang.String">STRING</attribute>
+            <value name="HEARTBEAT">0</value>
+            <value name="TEST_REQUEST">1</value>
+            <value name="RESEND_REQUEST">2</value>
+            <value name="REJECT">3</value>
+            <value name="SEQUENCE_RESET">4</value>
+            <value name="LOGOUT">5</value>
+            <value name="EXECUTION_REPORT">8</value>
+            <value name="ORDER_CANCEL_REJECT">9</value>
+            <value name="LOGON">A</value>
+            <value name="ORDER_SINGLE">D</value>
+            <value name="ORDER_LIST">E</value>
+            <value name="ORDER_CANCEL_REQUEST">F</value>
+            <value name="ORDER_CANCEL_REPLACE_REQUEST">G</value>
+            <value name="QUOTE">S</value>
+            <value name="QUOTE_CANCEL">Z</value>
+            <value name="MASS_QUOTE_ACKNOWLEDGEMENT">b</value>
+            <value name="BUSINESS_MESSAGE_REJECT">j</value>
+            <value name="BID_REQUEST">k</value>
+            <value name="ORDER_MASS_CANCEL_REQUEST">q</value>
+            <value name="ORDER_MASS_CANCEL_REPORT">r</value>
+            <value name="NEW_ORDER_CROSS">s</value>
+            <value name="CROSS_ORDER_CANCEL_REQUEST">u</value>
+            <value name="TRADE_CAPTURE_REPORT_REQUEST">AD</value>
+            <value name="TRADE_CAPTURE_REPORT">AE</value>
+            <value name="ORDER_MASS_STATUS_REQUEST">AF</value>
+            <value name="QUOTE_STATUS_REPORT">AI</value>
+            <value name="TRADE_CAPTURE_REPORT_REQUEST_ACK">AQ</value>
+            <value name="TRADE_CAPTURE_REPORT_ACK">AR</value>
+            <value name="APPLICATION_MESSAGE_REQUEST">BW</value>
+            <value name="APPLICATION_MESSAGE_REQUEST_ACK">BX</value>
+        </field>
+        <field id="field-NewSeqNo" name="NewSeqNo" type="java.lang.Integer">
+            <attribute name="tag" type="java.lang.Integer">36</attribute>
+            <attribute name="fixtype" type="java.lang.String">SEQNUM</attribute>
+        </field>
+        <field id="field-OrderID" name="OrderID" type="java.lang.String">
+            <attribute name="tag" type="java.lang.Integer">37</attribute>
+            <attribute name="fixtype" type="java.lang.String">STRING</attribute>
+        </field>
+        <field id="field-OrderQty" name="OrderQty" type="java.math.BigDecimal">
+            <attribute name="tag" type="java.lang.Integer">38</attribute>
+            <attribute name="fixtype" type="java.lang.String">QTY</attribute>
+        </field>
+        <field id="field-OrdStatus" name="OrdStatus" type="java.lang.Character">
+            <attribute name="tag" type="java.lang.Integer">39</attribute>
+            <attribute name="fixtype" type="java.lang.String">CHAR</attribute>
+            <value name="NEW">0</value>
+            <value name="PARTIALLY_FILLED">1</value>
+            <value name="FILLED">2</value>
+            <value name="DONE_FOR_DAY">3</value>
+            <value name="CANCELED">4</value>
+            <value name="REPLACED">5</value>
+            <value name="PENDING_CANCEL">6</value>
+            <value name="STOPPED">7</value>
+            <value name="REJECTED">8</value>
+            <value name="SUSPENDED">9</value>
+            <value name="PENDING_NEW">A</value>
+            <value name="CALCULATED">B</value>
+            <value name="EXPIRED">C</value>
+            <value name="ACCEPTED_FOR_BIDDING">D</value>
+            <value name="PENDING_REPLACE">E</value>
+        </field>
+        <field id="field-OrdType" name="OrdType" type="java.lang.Character">
+            <attribute name="tag" type="java.lang.Integer">40</attribute>
+            <attribute name="fixtype" type="java.lang.String">CHAR</attribute>
+            <value name="MARKET">1</value>
+            <value name="LIMIT">2</value>
+            <value name="STOP">3</value>
+            <value name="STOP_LIMIT">4</value>
+            <value name="MARKET_ON_CLOSE">5</value>
+            <value name="WITH_OR_WITHOUT">6</value>
+            <value name="LIMIT_OR_BETTER">7</value>
+            <value name="LIMIT_WITH_OR_WITHOUT">8</value>
+            <value name="ON_BASIS">9</value>
+            <value name="ON_CLOSE">A</value>
+            <value name="LIMIT_ON_CLOSE">B</value>
+            <value name="FOREX_MARKET">C</value>
+            <value name="PREVIOUSLY_QUOTED">D</value>
+            <value name="PREVIOUSLY_INDICATED">E</value>
+            <value name="FOREX_LIMIT">F</value>
+            <value name="FOREX_SWAP">G</value>
+            <value name="FOREX_PREVIOUSLY_QUOTED">H</value>
+            <value name="FUNARI">I</value>
+            <value name="MARKET_IF_TOUCHED">J</value>
+            <value name="MARKET_WITH_LEFTOVER_AS_LIMIT">K</value>
+            <value name="PREVIOUS_FUND_VALUATION_POINT">L</value>
+            <value name="NEXT_FUND_VALUATION_POINT">M</value>
+            <value name="PEGGED">P</value>
+            <value name="COUNTER_ORDER_SELECTION">Q</value>
+        </field>
+    </fields>
+</dictionary>

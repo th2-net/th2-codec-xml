@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<fields xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://22222"
+        xsi:schemaLocation="22222 registration.xsd">
+    <FirstName>Alexandr</FirstName>
+    <LastName>Potagashev</LastName>
+    <DateOfBirth>06.04.2002</DateOfBirth>
+    <PhoneNumber>89234170028</PhoneNumber>
+</fields>

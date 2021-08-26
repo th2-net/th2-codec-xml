@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           elementFormDefault="qualified"
+           targetNamespace="http://22222">
+    <xs:import schemaLocation="music_band.xsd" namespace="http://anything.com"/>
+    <xs:element name="fields">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="FirstName" type="xs:string"/>
+                <xs:element name="LastName" type="xs:string"/>
+                <xs:element name="DateOfBirth" type="xs:string"/>
+                <xs:element name="PhoneNumber" type="xs:long"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+</xs:schema>
+
+        <!--
+           <xs:complexType name="fields">
+               <xs:attribute name="FirstName" type="xs:string"/>
+               <xs:attribute name="LastName" type="xs:string"/>
+               <xs:attribute name="DateOfBirth" type="xs:string"/>
+               <xs:attribute name="PhoneNumber" type="xs:long"/>
+           </xs:complexType>-->

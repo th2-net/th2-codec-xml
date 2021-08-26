@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- targetNamespace="http://xml.netbeans.org/schema/newXmlSchema"-->
+<xs:schema elementFormDefault="qualified"
+           xmlns="urn:Test.Namespace"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="http://anything.com"
+           xmlns:pref="http://22222">
+
+    <xs:import schemaLocation="registration.xsd" namespace="http://22222"/>
+
+    <xs:element name="instruments">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="pref:fields"/>
+                <xs:element name="guitar">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="type" type="xs:string"/>
+                            <xs:element name="strings">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element name="string" type="xs:int" minOccurs="6" maxOccurs="8"/>
+                                    </xs:sequence>
+                                </xs:complexType>
+                            </xs:element>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="vocal">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="sex" type="xs:string"/>
+                            <xs:element name="voice" type="xs:string"/>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="drumkit">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="cymbals">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element name="component" type="xs:string" minOccurs="1" maxOccurs="unbounded"/>
+                                    </xs:sequence>
+                                </xs:complexType>
+                            </xs:element>
+                            <xs:element name="drums">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element name="component" type="xs:string" minOccurs="2" maxOccurs="unbounded"/>
+                                    </xs:sequence>
+                                </xs:complexType>
+                            </xs:element>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="bass">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="strings" type="xs:int"/>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+</xs:schema>

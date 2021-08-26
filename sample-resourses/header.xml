@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BizMsg xmlns="urn:asx:xsd:xasx.802.001.04"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="urn:asx:xsd:xasx.802.001.04 ASX_AU_CHS_comm_802_001_04_xasx_802_001_04.xsd">qwe</BizMsg>
+<AppHdr xmlns="urn:iso:std:iso:20022:tech:xsd:head.001.001.02"
+        xmlns:n1="http://www.w3.org/2000/09/xmldsig#"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="urn:iso:std:iso:20022:tech:xsd:head.001.001.02 ASX_AU_CHS_comm_801_001_02_head_001_001_02.xsd">qwe</AppHdr>

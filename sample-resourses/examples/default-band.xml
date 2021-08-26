@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<n1:instruments xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://anything.com music_band.xsd http://22222 registration.xsd"
+             xmlns:n1="http://anything.com"
+
+             >
+
+    <n2:fields xmlns:n2="http://22222">
+        <n2:FirstName>Alexandr</n2:FirstName>
+        <n2:LastName>Potagashev</n2:LastName>
+        <n2:DateOfBirth>06.04.2002</n2:DateOfBirth>
+        <n2:PhoneNumber>89234170028</n2:PhoneNumber>
+    </n2:fields>
+
+    <n1:guitar>
+        <n1:type>electric</n1:type>
+        <n1:strings>
+            <n1:string>1</n1:string>
+            <n1:string>2</n1:string>
+            <n1:string>3</n1:string>
+            <n1:string>4</n1:string>
+            <n1:string>5</n1:string>
+            <n1:string>6</n1:string>
+        </n1:strings>
+    </n1:guitar>
+    <n1:vocal>
+        <n1:sex>male</n1:sex>
+        <n1:voice>tenor</n1:voice>
+    </n1:vocal>
+
+    <n1:drumkit>
+        <n1:cymbals>
+            <n1:component>crash</n1:component>
+            <n1:component>hat</n1:component>
+            <n1:component>ride</n1:component>
+        </n1:cymbals>
+        <n1:drums>
+            <n1:component>snare</n1:component>
+            <n1:component>tom-tom</n1:component>
+            <n1:component>bass</n1:component>
+        </n1:drums>
+    </n1:drumkit>
+
+    <n1:bass>
+        <n1:strings>4</n1:strings>
+    </n1:bass>
+
+</n1:instruments>
