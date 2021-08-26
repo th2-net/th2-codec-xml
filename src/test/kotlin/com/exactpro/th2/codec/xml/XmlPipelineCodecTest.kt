@@ -17,6 +17,7 @@ package com.exactpro.th2.codec.xml
 import com.exactpro.sf.common.messages.structures.IDictionaryStructure
 import com.exactpro.sf.common.messages.structures.loaders.XmlDictionaryStructureLoader
 import com.exactpro.th2.codec.CodecException
+import com.exactpro.th2.codec.api.IPipelineCodec
 import com.exactpro.th2.common.grpc.AnyMessage
 import com.exactpro.th2.common.grpc.Direction
 import com.exactpro.th2.common.grpc.Message
@@ -43,7 +44,7 @@ class XmlPipelineCodecTest {
         val xmlSetPath = "C:\\Users\\Саня\\IdeaProjects\\xmlValidatorWithGradle\\sample-resourses\\XMLset.zip"
         val xsdSetPath = "C:\\Users\\Саня\\IdeaProjects\\xmlValidatorWithGradle\\sample-resourses\\XSDset.zip"
 
-        val xmlPipelineCodec = XmlPipelineCodec()
+        val xmlPipelineCodec: IPipelineCodec = XmlPipelineCodec()
 
         val pairList = xmlPipelineCodec.validate(dirty, xmlSetPath, xsdSetPath, bufferPath)
         pairList.forEach {

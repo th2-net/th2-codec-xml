@@ -256,6 +256,13 @@ open class XmlPipelineCodec : IPipelineCodec {
                 println()
                 for (attribute in attributes) {
                     val factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI)
+                    factory.resourceResolver = ResourceResolver()
+                    factory.resourceResolver.resolveResource(
+                        "XML Schema Part 1",
+                        documentXSD.documentElement.getAttribute("targetNamespace"),
+                        null,
+                        "IETF RFC 2396",
+                        null)
                     val schema = factory.newSchema(File(nameXSD))
                     if(attribute.nodeValue == documentXSD.documentElement.getAttribute("targetNamespace")){
                         try {
