@@ -5,61 +5,46 @@ package com.exactpro.th2.codec.xml
 import com.sun.org.apache.xerces.internal.dom.DOMInputImpl
 import org.w3c.dom.ls.LSInput
 import org.w3c.dom.ls.LSResourceResolver
-import java.io.BufferedInputStream
-import java.io.IOException
-import java.io.InputStream
-import java.io.Reader
+import java.io.*
 import java.util.*
+// string - targetNS, InputStream - schemaContent
+class ResourceResolver(xsds: ArrayList<Pair<String, ByteArray>>) : LSResourceResolver {
 
-/*override fun resolveResource(
-        type: String,
-        namespaceURI: String,
-        publicId: String,
-        systemId: String,
-        baseURI: String
-    ): LSInput {
-        // note: in this sample, the XSD's are expected to be in the root of the classpath
-        val resourceAsStream = this.javaClass.classLoader
-            .getResourceAsStream(buildPath(systemId))
-        Objects.requireNonNull(resourceAsStream, String.format("Could not find the specified xsd file: %s", systemId))
-        return DOMInputImpl(publicId, systemId, baseURI, resourceAsStream, "UTF-8")
-    }
-
-    private fun buildPath(systemId: String): String {
-        return if (basePath == null) systemId else String.format("%s/%s", basePath, systemId)
-    }
-*/
-
-
-class ResourceResolver() : LSResourceResolver {
+    val xsds = xsds
     override fun resolveResource(
-        type: String?, namespaceURI: String?,
+        type: String?, namespaceURI: String,
         publicId: String?, systemId: String?, baseURI: String?
     ): LSInput? {
 
+        xsds.forEach {
+            if (it.first == namespaceURI){
+                return Input(it.second)
+            }
+        }
+        return null
+
         // note: in this sample, the XSD's are expected to be in the root of the classpath
-        val resourceAsStream = this.javaClass.classLoader
-            .getResourceAsStream(systemId)
-        return Input(publicId!!, systemId!!, resourceAsStream)
+        /*val resourceAsStream = this.javaClass.classLoader
+            .getResourceAsStream(xsds[namespaceURI]?)*/
     }
+
 }
 
+class Input(private val byteArray: ByteArray) : LSInput {
 
-class Input(private var publicId: String, private var systemId: String, input: InputStream?) : LSInput {
-    override fun getPublicId(): String {
-        return publicId
+    override fun setSystemId(systemId: String) {
+
     }
 
-    override fun setPublicId(publicId: String) {
-        this.publicId = publicId
+    override fun getPublicId(): String? {
+        return null
     }
-
     override fun getBaseURI(): String? {
         return null
     }
 
     override fun getByteStream(): InputStream? {
-        return null
+        return ByteArrayInputStream(byteArray)
     }
 
     override fun getCertifiedText(): Boolean {
@@ -75,17 +60,8 @@ class Input(private var publicId: String, private var systemId: String, input: I
     }
 
     override fun getStringData(): String? {
-        synchronized(inputStream) {
-            try {
-                val input = ByteArray(inputStream.available())
-                inputStream.read(input)
-                return String(input)
-            } catch (e: IOException) {
-                e.printStackTrace()
-                println("Exception $e")
-                return null
-            }
-        }
+        val s = Scanner(byteStream).useDelimiter("\\A")
+        return if (s.hasNext()) s.next() else ""
     }
 
     override fun setBaseURI(baseURI: String) {}
@@ -94,17 +70,12 @@ class Input(private var publicId: String, private var systemId: String, input: I
     override fun setCharacterStream(characterStream: Reader?) {}
     override fun setEncoding(encoding: String) {}
     override fun setStringData(stringData: String) {}
-    override fun getSystemId(): String {
-        return systemId
+    override fun getSystemId(): String? {
+        return null
     }
 
-    override fun setSystemId(systemId: String) {
-        this.systemId = systemId
-    }
 
-    var inputStream: BufferedInputStream
+    override fun setPublicId(publicId: String?) {
 
-    init {
-        inputStream = BufferedInputStream(input)
     }
 }

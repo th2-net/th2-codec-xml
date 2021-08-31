@@ -203,6 +203,8 @@ open class XmlPipelineCodec : IPipelineCodec {
     }
 
     fun validate(dirty: Boolean, xmlSetPath: String, xsdSetPath: String, bufferPath: String): java.util.ArrayList<Pair<Node, String>> {
+        val pairsXSDs = ArrayList<Pair<String, ByteArray>>()
+
         val zipXML = ZipInputStream(FileInputStream(xmlSetPath))
         var entry: ZipEntry? = null
         var nameXML: String
@@ -256,18 +258,28 @@ open class XmlPipelineCodec : IPipelineCodec {
                 println()
                 for (attribute in attributes) {
                     val factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI)
-                    factory.resourceResolver = ResourceResolver()
-                    factory.resourceResolver.resolveResource(
-                        "XML Schema Part 1",
-                        documentXSD.documentElement.getAttribute("targetNamespace"),
-                        null,
-                        "IETF RFC 2396",
-                        null)
-                    val schema = factory.newSchema(File(nameXSD))
+                    val resourceResolver = ResourceResolver(pairsXSDs)
+                    factory.resourceResolver = resourceResolver  // this code does not care either this line exist or not
+                    factory.errorHandler = XsdErrorHandler(dirty)
+
+// alternative for "val schemaFile = factory.newSchema(File(nameXSD))"
+/*
+                val inputStream = resourceResolver.resolveResource(
+                    "http://www.w3.org/2001/XMLSchema",
+                    documentXSD.documentElement.getAttribute("targetNamespace"),
+                    null,
+                    null,
+                    documentXSD.documentElement.baseURI
+                )?.byteStream
+                val schemaFile: Source = StreamSource(inputStream)*/
+
+                    val schemaFile = factory.newSchema(File(nameXSD))
                     if(attribute.nodeValue == documentXSD.documentElement.getAttribute("targetNamespace")){
                         try {
-                            val validator: Validator = schema.newValidator()
+                            val validator: Validator = schemaFile.newValidator()
                             validator.errorHandler = XsdErrorHandler(dirty)
+
+                            validator.resourceResolver = resourceResolver // this code does not care either this line exist or not
 
                             validator.validate(StreamSource(File(nameXML)))
                             println("Validation of $nameXML with $nameXSD finished")
@@ -296,7 +308,6 @@ open class XmlPipelineCodec : IPipelineCodec {
                             System.err.println(e.message)
                             //e.printStackTrace()
                         }
-
                     }
                 }
                 zipXSD.closeEntry()
