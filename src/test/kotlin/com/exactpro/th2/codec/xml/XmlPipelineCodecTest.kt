@@ -39,13 +39,11 @@ class XmlPipelineCodecTest {
     @Test
     fun `test wrong dictionary`() {
         try {
-            XmlPipelineCodec().init(
-                XmlDictionaryStructureLoader().load(
-                    Thread.currentThread().contextClassLoader.getResourceAsStream(
-                        "test_wrong_dictionary.xml"
-                    )
+            XmlPipelineCodec(XmlDictionaryStructureLoader().load(
+                Thread.currentThread().contextClassLoader.getResourceAsStream(
+                    "test_wrong_dictionary.xml"
                 )
-            )
+            ), null)
             fail()
         } catch (e: CodecException) {
             assertEquals("Have wrong dictionary structure in message with name 'TestMessage'", e.message)
@@ -78,10 +76,10 @@ class XmlPipelineCodecTest {
 
     @Test
     fun `test additional message type and messagetype field`() {
-        val codec = XmlPipelineCodec()
         val dictionary: IDictionaryStructure =
             XmlDictionaryStructureLoader().load(Thread.currentThread().contextClassLoader.getResourceAsStream("test_dictionary_type_path.xml"))
-        codec.init(dictionary, null)
+        val codec = XmlPipelineCodec(dictionary, null)
+
 
         val xml = """<Msg>
             <App xmlns="test.02" xmlns:n1="http://www.w3.org/2000/09/xml" xmlns:xsi="http://www.w3.org/2001/XMLSchema" xsi:schemaLocation="test.xsd">
@@ -446,13 +444,9 @@ class XmlPipelineCodecTest {
         .build()
 
     companion object {
-        val codec = XmlPipelineCodec()
         val dictionary: IDictionaryStructure =
             XmlDictionaryStructureLoader().load(Thread.currentThread().contextClassLoader.getResourceAsStream("test_dictionary.xml"))
-
-        init {
-            codec.init(dictionary, null)
-        }
+        val codec = XmlPipelineCodec(dictionary, null)
 
         val EMBEDDED_XML = """
             <TestEmbedded>

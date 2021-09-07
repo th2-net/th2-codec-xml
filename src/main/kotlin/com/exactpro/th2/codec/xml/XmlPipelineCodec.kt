@@ -59,9 +59,8 @@ import javax.xml.transform.stream.StreamResult
 import javax.xml.xpath.XPath
 import javax.xml.xpath.XPathFactory
 
-open class XmlPipelineCodec : IPipelineCodec {
+open class XmlPipelineCodec(dictionary: IDictionaryStructure, settings: IPipelineCodecSettings?) : IPipelineCodec {
 
-    override val protocol: String = "XML"
     private var messagesTypes: Map<String, IMessageStructure> = emptyMap()
     private var xmlCharset: Charset = Charsets.UTF_8
     private var documentTypePublic: Boolean? = null
@@ -70,7 +69,7 @@ open class XmlPipelineCodec : IPipelineCodec {
     private var xmlRootTagName: String? = null
     private var xmlTypePath: String? = null
 
-    override fun init(dictionary: IDictionaryStructure, settings: IPipelineCodecSettings?) {
+    init {
         dictionary.apply {
             messagesTypes = messages.map {  (type, structure) ->
                 val attributeType = structure.attributes.get(XML_MESSAGE_TYPE_ATTRIBUTE)?.value
@@ -173,7 +172,7 @@ open class XmlPipelineCodec : IPipelineCodec {
 
         return MessageGroup.newBuilder().addAllMessages(
             messages.map { anyMsg ->
-                if (anyMsg.hasMessage() && anyMsg.message.metadata.protocol.let { msgProtocol -> msgProtocol.isNullOrEmpty() || msgProtocol == this.protocol })
+                if (anyMsg.hasMessage() && anyMsg.message.metadata.protocol.let { msgProtocol -> msgProtocol.isNullOrEmpty() || msgProtocol == XmlPipelineCodecFactory.PROTOCOL })
                     AnyMessage.newBuilder().setRawMessage(encodeOne(anyMsg.message)).build()
                 else anyMsg
             }
@@ -213,7 +212,7 @@ open class XmlPipelineCodec : IPipelineCodec {
         return RawMessage.newBuilder().apply {
             parentEventId = message.parentEventId
             metadataBuilder.putAllProperties(message.metadata.propertiesMap)
-            metadataBuilder.protocol = protocol
+            metadataBuilder.protocol = XmlPipelineCodecFactory.PROTOCOL
             metadataBuilder.id = message.metadata.id
             metadataBuilder.timestamp = message.metadata.timestamp
             body = output.toByteString()
@@ -264,7 +263,7 @@ open class XmlPipelineCodec : IPipelineCodec {
                                 rawMessage.metadata.also { rawMetadata ->
                                     msgMetadata.id = rawMetadata.id
                                     msgMetadata.timestamp = rawMetadata.timestamp
-                                    msgMetadata.protocol = protocol
+                                    msgMetadata.protocol = XmlPipelineCodecFactory.PROTOCOL
                                     msgMetadata.putAllProperties(rawMetadata.propertiesMap)
                                 }
                             }
