@@ -4,8 +4,8 @@
 
 
 ### 0.2.0
-+ New option for dictionary - message type path
-+ New attribute for message - message type value
++ Added attribute for dictionary - message type path
++ Added attribute for message - message type value
 
 ### 0.1.0
 + Parent id loss fix
