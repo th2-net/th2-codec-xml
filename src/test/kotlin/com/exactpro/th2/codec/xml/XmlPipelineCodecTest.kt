@@ -77,6 +77,44 @@ class XmlPipelineCodecTest {
     }
 
     @Test
+    fun `test additional message type and messagetype field`() {
+        val codec = XmlPipelineCodec()
+        val dictionary: IDictionaryStructure =
+            XmlDictionaryStructureLoader().load(Thread.currentThread().contextClassLoader.getResourceAsStream("test_dictionary_type_path.xml"))
+        codec.init(dictionary, null)
+
+        val xml = """<Msg>
+            <App xmlns="test.02" xmlns:n1="http://www.w3.org/2000/09/xml" xmlns:xsi="http://www.w3.org/2001/XMLSchema" xsi:schemaLocation="test.xsd">
+                <MsgType>test.001.001</MsgType>
+            </App>
+            <Doc xmlns="test.02" xmlns:n1="http://www.w3.org/2000/09/xml" xmlns:xsi="http://www.w3.org/2001/XMLSchema" xsi:schemaLocation="test.xsd">
+            </Doc>
+        </Msg>""".trimIndent()
+
+        val resultMessage = parsedMessage("Test001").addFields(
+            "App", parsedMessage("App").addFields(
+                "xmlns", "test.02",
+                "n1", "http://www.w3.org/2000/09/xml",
+                "xsi", "http://www.w3.org/2001/XMLSchema",
+                "schemaLocation", "test.xsd",
+                "MsgType", "test.001.001"
+            ).build(),
+            "Doc", parsedMessage("Doc").addFields(
+                "xmlns", "test.02",
+                "n1", "http://www.w3.org/2000/09/xml",
+                "xsi", "http://www.w3.org/2001/XMLSchema",
+                "schemaLocation", "test.xsd"
+            ).build()
+        ).build()
+
+
+        val group = codec.decode(createRawMessage(xml))
+        assertEquals(1, group.messagesCount)
+        println(group.messagesList[0].message)
+        assertEqualsMessages(resultMessage, group.messagesList[0].message)
+    }
+
+    @Test
     fun `test attributes fields`() {
         checkDecode(
             """<TestAttrMessage>

@@ -68,10 +68,18 @@ open class XmlPipelineCodec : IPipelineCodec {
     private var documentTypeFormatStringBase: String? = null
     private var documentTypeFormatStringUrl: String? = null
     private var xmlRootTagName: String? = null
+    private var xmlTypePath: String? = null
 
     override fun init(dictionary: IDictionaryStructure, settings: IPipelineCodecSettings?) {
         dictionary.apply {
-            messagesTypes = messages
+            messagesTypes = messages.map {  (type, structure) ->
+                val attributeType = structure.attributes.get(XML_MESSAGE_TYPE_ATTRIBUTE)?.value
+                if (attributeType!=null) {
+                    attributeType to structure
+                } else {
+                    type to structure
+                }
+            }.toMap()
             val xmlNames = HashSet<String>()
 
             messages.forEach { (_, msgStructure) ->
@@ -105,6 +113,7 @@ open class XmlPipelineCodec : IPipelineCodec {
                 documentTypeFormatStringUrl =
                     get(XML_DOCUMENT_TYPE_URL_FORMAT_STR_ATTRIBUTE)?.value?.let { createFormatString(it) }
                 xmlRootTagName = get(XML_DOCUMENT_ROOT_TAG_ATTRIBUTE)?.value
+                xmlTypePath = get(XML_DOCUMENT_PATH_TO_TYPE_ATTRIBUTE)?.value
             }
 
             if (documentTypePublic != null && (documentTypeFormatStringUrl.isNullOrEmpty() || documentTypePublic!! && documentTypeFormatStringBase.isNullOrEmpty())) {
@@ -280,21 +289,36 @@ open class XmlPipelineCodec : IPipelineCodec {
             return emptyMap()
         }
 
-        val rootNode =
-            if (node.firstChild.nodeName == xmlRootTagName) node.firstChild else node
+        val rootNode = if (xmlTypePath == null && node.firstChild.nodeName == xmlRootTagName) node.firstChild else node
 
         val result = HashMap<String, List<Node>>()
-        messagesTypes.forEach { (type, msgStructure) ->
-            (msgStructure.getXPathExpression()?.let {
-                X_PATH.get().find(it, rootNode) { ex ->
-                    DecodeException(
-                        "Can not execute XPath exception for message type '$type'",
-                        ex
-                    )
-                }.toList()
-            } ?: rootNode.childNodes.toList().filter { msgStructure.isValidNode(it) }).also {
-                if (it.isNotEmpty()) {
-                    result[type] = it
+
+        if (xmlTypePath != null) {
+            X_PATH.get().find(xmlTypePath!!, rootNode) { ex ->
+                DecodeException(
+                    "Can not find message type by xpath $xmlTypePath",
+                    ex
+                )
+            }.let { typeFoundList ->
+                typeFoundList.forEach { type ->
+                    if (messagesTypes.containsKey(type.getText())) {
+                        result[type.getText()] = rootNode.childNodes.toList()
+                    }
+                }
+            }
+        } else {
+            messagesTypes.forEach { (type, msgStructure) ->
+                (msgStructure.getXPathExpression()?.let {
+                    X_PATH.get().find(it, rootNode) { ex ->
+                        DecodeException(
+                            "Can not execute XPath exception for message type '$type'",
+                            ex
+                        )
+                    }.toList()
+                } ?: rootNode.childNodes.toList().filter { msgStructure.isValidNode(it) }).also {
+                    if (it.isNotEmpty()) {
+                        result[type] = it
+                    }
                 }
             }
         }
@@ -559,6 +583,14 @@ open class XmlPipelineCodec : IPipelineCodec {
          * Root tag name for xml file.
          */
         const val XML_DOCUMENT_ROOT_TAG_ATTRIBUTE = "XmlRootTag"
+
+        /**
+         * Path to message type in xml file
+         */
+        const val XML_DOCUMENT_PATH_TO_TYPE_ATTRIBUTE = "XTypePath"
+
+        const val XML_MESSAGE_TYPE_ATTRIBUTE = "MessageType"
+
 
         /**
          * Xml tag name for message
