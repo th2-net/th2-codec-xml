@@ -47,4 +47,5 @@ CompilerHints
 #Sailfish
 shared_workspace
 tmp_workspace
-shared
+
+logs/

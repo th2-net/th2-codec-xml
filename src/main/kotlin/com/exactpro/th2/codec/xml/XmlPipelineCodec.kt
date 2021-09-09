@@ -59,7 +59,7 @@ import javax.xml.transform.stream.StreamResult
 import javax.xml.xpath.XPath
 import javax.xml.xpath.XPathFactory
 
-open class XmlPipelineCodec(dictionary: IDictionaryStructure, settings: IPipelineCodecSettings?) : IPipelineCodec {
+open class XmlPipelineCodec(dictionary: IDictionaryStructure, private val settings: XmlPipelineCodecSettings) : IPipelineCodec {
 
     private var messagesTypes: Map<String, IMessageStructure> = emptyMap()
     private var xmlCharset: Charset = Charsets.UTF_8
@@ -71,14 +71,8 @@ open class XmlPipelineCodec(dictionary: IDictionaryStructure, settings: IPipelin
 
     init {
         dictionary.apply {
-            messagesTypes = messages.map {  (type, structure) ->
-                val attributeType = structure.attributes.get(XML_MESSAGE_TYPE_ATTRIBUTE)?.value
-                if (attributeType!=null) {
-                    attributeType to structure
-                } else {
-                    type to structure
-                }
-            }.toMap()
+            messagesTypes = messages
+
             val xmlNames = HashSet<String>()
 
             messages.forEach { (_, msgStructure) ->
@@ -189,13 +183,15 @@ open class XmlPipelineCodec(dictionary: IDictionaryStructure, settings: IPipelin
     private fun encodeOne(message: Message, messageStructure: IMessageStructure): RawMessage {
 
         val document = DOCUMENT_BUILDER.get().newDocument()
-        val xmlMsgType = messageStructure.getXmlTagName()
+        val xmlMsgType =  messageStructure.getXmlTagName()
 
-        val msgNode =
-            (xmlRootTagName?.let { rootTagName -> document.addNode(rootTagName, document) } ?: document).addNode(
-                xmlMsgType,
-                document
-            )
+        val msgNode = (xmlRootTagName?.let { rootTagName -> document.addNode(rootTagName, document) } ?: document).run {
+            if (!settings.replaceRoot) {
+                document.addNode(xmlMsgType, document)
+            } else {
+                this
+            }
+        }
 
         try {
             MessageStructureWriter.WRITER.traverse(
@@ -288,7 +284,7 @@ open class XmlPipelineCodec(dictionary: IDictionaryStructure, settings: IPipelin
             return emptyMap()
         }
 
-        val rootNode = if (xmlTypePath == null && node.firstChild.nodeName == xmlRootTagName) node.firstChild else node
+        val rootNode = if (node.firstChild.nodeName == xmlRootTagName && !settings.replaceRoot) node.firstChild else node
 
         val result = HashMap<String, List<Node>>()
 
@@ -299,11 +295,10 @@ open class XmlPipelineCodec(dictionary: IDictionaryStructure, settings: IPipelin
                     ex
                 )
             }.let { typeFoundList ->
-                typeFoundList.forEach { type ->
-                    if (messagesTypes.containsKey(type.getText())) {
-                        result[type.getText()] = rootNode.childNodes.toList()
-                    }
-                }
+                check(typeFoundList.length == 1) {"XPath must find one and only one message type value inside xml! Was found: ${typeFoundList.length}"}
+                val foundType = typeFoundList.item(0).getText()
+                check(messagesTypes.containsKey(foundType)) {"XPath found type that wasn't in dictionary! Found type: $foundType"}
+                result[foundType] = rootNode.childNodes.toList()
             }
         } else {
             messagesTypes.forEach { (type, msgStructure) ->
@@ -587,8 +582,6 @@ open class XmlPipelineCodec(dictionary: IDictionaryStructure, settings: IPipelin
          * Path to message type in xml file
          */
         const val XML_DOCUMENT_PATH_TO_TYPE_ATTRIBUTE = "XTypePath"
-
-        const val XML_MESSAGE_TYPE_ATTRIBUTE = "MessageType"
 
 
         /**

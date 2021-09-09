@@ -16,5 +16,6 @@ package com.exactpro.th2.codec.xml
 
 import com.exactpro.th2.codec.api.IPipelineCodecSettings
 
-class XmlPipelineCodecSettings() : IPipelineCodecSettings {
-}
+class XmlPipelineCodecSettings(
+    val replaceRoot: Boolean = false
+) : IPipelineCodecSettings

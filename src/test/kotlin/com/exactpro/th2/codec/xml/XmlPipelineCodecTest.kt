@@ -43,7 +43,8 @@ class XmlPipelineCodecTest {
                 Thread.currentThread().contextClassLoader.getResourceAsStream(
                     "test_wrong_dictionary.xml"
                 )
-            ), null)
+            ), XmlPipelineCodecSettings()
+            )
             fail()
         } catch (e: CodecException) {
             assertEquals("Have wrong dictionary structure in message with name 'TestMessage'", e.message)
@@ -75,21 +76,22 @@ class XmlPipelineCodecTest {
     }
 
     @Test
-    fun `test additional message type and messagetype field`() {
+    fun `test additional message type and message type field`() {
         val dictionary: IDictionaryStructure =
             XmlDictionaryStructureLoader().load(Thread.currentThread().contextClassLoader.getResourceAsStream("test_dictionary_type_path.xml"))
-        val codec = XmlPipelineCodec(dictionary, null)
+        val codec = XmlPipelineCodec(dictionary, XmlPipelineCodecSettings(true))
 
 
-        val xml = """<Msg>
-            <App xmlns="test.02" xmlns:n1="http://www.w3.org/2000/09/xml" xmlns:xsi="http://www.w3.org/2001/XMLSchema" xsi:schemaLocation="test.xsd">
-                <MsgType>test.001.001</MsgType>
-            </App>
-            <Doc xmlns="test.02" xmlns:n1="http://www.w3.org/2000/09/xml" xmlns:xsi="http://www.w3.org/2001/XMLSchema" xsi:schemaLocation="test.xsd">
-            </Doc>
-        </Msg>""".trimIndent()
+        val xml = """
+            <Msg>
+                <App xmlns="test.02" xmlns:n1="http://www.w3.org/2000/09/xml" xmlns:xsi="http://www.w3.org/2001/XMLSchema" xsi:schemaLocation="test.xsd">
+                    <MsgType>test.001.001</MsgType>
+                </App>
+                <Doc xmlns="test.02" xmlns:n1="http://www.w3.org/2000/09/xml" xmlns:xsi="http://www.w3.org/2001/XMLSchema" xsi:schemaLocation="test.xsd"/>
+            </Msg>
+            """.trimIndent()
 
-        val resultMessage = parsedMessage("Test001").addFields(
+        val parsedMessage = parsedMessage("test.001.001").addFields(
             "App", parsedMessage("App").addFields(
                 "xmlns", "test.02",
                 "n1", "http://www.w3.org/2000/09/xml",
@@ -106,10 +108,18 @@ class XmlPipelineCodecTest {
         ).build()
 
 
-        val group = codec.decode(createRawMessage(xml))
-        assertEquals(1, group.messagesCount)
-        println(group.messagesList[0].message)
-        assertEqualsMessages(resultMessage, group.messagesList[0].message)
+        val decodedGroup = codec.decode(createRawMessage(xml))
+        assertEquals(1, decodedGroup.messagesCount)
+        assertEqualsMessages(parsedMessage, decodedGroup.messagesList[0].message)
+
+        val encodedGroup = codec.encode(MessageGroup.newBuilder().apply {
+            addMessages(AnyMessage.newBuilder().setMessage(parsedMessage).build())
+        }.build())
+
+        assertEquals(1, encodedGroup.messagesCount)
+        println(encodedGroup.messagesList[0].rawMessage)
+        assertEquals("$XML_DECLARATION\n$xml", encodedGroup.messagesList[0].rawMessage.body.toStringUtf8().trimIndent())
+
     }
 
     @Test
@@ -437,7 +447,7 @@ class XmlPipelineCodecTest {
                 .newBuilder().apply {
                     metadataBuilder.protocol = "XML"
                     metadataBuilder.idBuilder.connectionIdBuilder.sessionAlias = "test_session_alias"
-                    body = ByteString.copyFromUtf8("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n$xml")
+                    body = ByteString.copyFromUtf8("$XML_DECLARATION\n$xml")
                 }
             )
         )
@@ -446,7 +456,9 @@ class XmlPipelineCodecTest {
     companion object {
         val dictionary: IDictionaryStructure =
             XmlDictionaryStructureLoader().load(Thread.currentThread().contextClassLoader.getResourceAsStream("test_dictionary.xml"))
-        val codec = XmlPipelineCodec(dictionary, null)
+        val codec = XmlPipelineCodec(dictionary, XmlPipelineCodecSettings())
+
+        const val XML_DECLARATION = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>"
 
         val EMBEDDED_XML = """
             <TestEmbedded>

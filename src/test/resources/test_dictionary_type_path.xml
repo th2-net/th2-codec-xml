@@ -17,46 +17,14 @@
     <attribute name="XTypePath">Msg/App/MsgType</attribute>
 
     <fields>
-        <field name="a" id="F_A" type="java.lang.String">
-            <attribute name="XPath">a</attribute>
-        </field>
-        <field name="b" id="F_B" type="java.lang.String">
-            <attribute name="XPath">b</attribute>
-        </field>
-        <field name="c" id="F_C" type="java.lang.String">
-            <attribute name="XPath">c</attribute>
-        </field>
-        <field name="d" id="F_D" type="java.lang.String">
-            <attribute name="XPath">d</attribute>
-        </field>
-        <field name="e" id="F_E" type="java.lang.String">
-            <attribute name="XPath">e</attribute>
-        </field>
+
     </fields>
+
     <messages>
-        <message name="CommonFieldsAB" id="M_AB">
-            <attribute name="XPath">ab</attribute>
-            <attribute name="Embedded" type="java.lang.Boolean">true</attribute>
-            <field name="a" reference="F_A"/>
-            <field name="b" reference="F_B"/>
-        </message>
-        <message name="CommonFieldsABC" id="M_ABC">
-            <attribute name="XPath">abc</attribute>
-            <attribute name="Embedded" type="java.lang.Boolean">true</attribute>
-            <field name="ab" reference="M_AB"/>
-            <field name="c" reference="F_C"/>
-        </message>
-        <message name="CommonFieldsA">
-            <attribute name="XmlTagName">commonFieldsA</attribute>
-            <field name="f" type="java.lang.String">
-                <attribute name="XPath">f</attribute>
-            </field>
-            <field name="abc" reference="M_ABC"/>
+        <message name="test.001.001" reference="M_TestReference" id="M_Test001">
         </message>
 
-        <message name="Test001" id="M_Test001">
-            <attribute name="XmlTagName">Msg</attribute>
-            <attribute name="MessageType">test.001.001</attribute>
+        <message name="TestReference" id="M_TestReference">
             <field name="App" reference="M_App"/>
             <field name="Doc" reference="M_Doc"/>
         </message>
