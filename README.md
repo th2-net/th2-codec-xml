@@ -5,7 +5,7 @@
 
 ### 0.2.0
 + Added attribute for dictionary - message type path
-+ Added attribute for message - message type value
++ New option: replace or wrap head xml tag
 
 ### 0.1.0
 + Parent id loss fix
