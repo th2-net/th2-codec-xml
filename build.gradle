@@ -125,9 +125,7 @@ clean {
 }
 
 serviceLoader {
-    serviceInterface 'com.exactpro.th2.codec.api.IPipelineCodec'
-    serviceInterface 'com.exactpro.th2.codec.api.IPipelineCodecSettings'
-    serviceInterface 'com.exactpro.th2.codec.api.IPipelineCodecSettingsTypeProvider'
+    serviceInterface 'com.exactpro.th2.codec.api.IPipelineCodecFactory'
 }
 
 test {
