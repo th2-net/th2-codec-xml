@@ -165,7 +165,7 @@ open class XmlPipelineCodec(
 
         return MessageGroup.newBuilder().addAllMessages(
             messages.map { anyMsg ->
-                if (anyMsg.hasMessage() && anyMsg.message.metadata.protocol.let { msgProtocol -> msgProtocol.isNullOrEmpty() || msgProtocol == PROTOCOL })
+                if (anyMsg.hasMessage() && anyMsg.message.metadata.protocol.let { msgProtocol -> msgProtocol.isNullOrEmpty() || PROTOCOL.equals(msgProtocol, true) })
                     AnyMessage.newBuilder().setRawMessage(encodeOne(anyMsg.message)).build()
                 else anyMsg
             }
@@ -518,7 +518,7 @@ open class XmlPipelineCodec(
         .replace(FORMAT_REPLACE_REGEX) { match -> match.groupValues.firstOrNull()?.let { "%$it\$s" } ?: "" }
 
     companion object {
-        const val PROTOCOL: String = "XML"
+        const val PROTOCOL: String = "xml"
 
         /**
          * Encoding for output. Added to file description

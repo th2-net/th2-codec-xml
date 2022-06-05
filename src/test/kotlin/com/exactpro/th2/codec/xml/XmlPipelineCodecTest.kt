@@ -32,6 +32,7 @@ import org.junit.jupiter.api.Test
 import org.opentest4j.AssertionFailedError
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
+import kotlin.test.assertTrue
 import kotlin.test.fail
 
 class XmlPipelineCodecTest {
@@ -349,7 +350,7 @@ class XmlPipelineCodecTest {
     private fun assertEqualsMessages(expected: Message, actual: Message, checkMetadata: Boolean = false) {
         if (checkMetadata) {
             assertEquals(expected.metadata.messageType, actual.metadata.messageType, "Not equals message types")
-            assertEquals(expected.metadata.protocol, actual.metadata.protocol, "Not equals protocols")
+            assertTrue(expected.metadata.protocol.equals(actual.metadata.protocol, true), "Not equals protocols")
             assertEquals(expected.metadata.id, actual.metadata.id, "Not equals ids")
         }
 
