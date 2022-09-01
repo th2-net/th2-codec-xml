@@ -15,14 +15,14 @@
 
 plugins {
     id 'com.palantir.docker' version '0.25.0'
-    id 'org.jetbrains.kotlin.jvm' version "1.5.32"
+    id 'org.jetbrains.kotlin.jvm' version "1.6.21"
     id 'com.github.harbby.gradle.serviceloader' version '1.1.5'
     id 'application'
 }
 
 ext {
     sharedDir = file("${project.rootDir}/shared")
-    sailfishVersion = '3.2.1839'
+    sailfishVersion = '3.2.1877'
 }
 
 group = 'com.exactpro.th2'
@@ -32,8 +32,8 @@ sourceCompatibility = 11
 targetCompatibility = 11
 
 ext {
-    junitVersion        = '5.8.2'
-    kotlin_version      = '1.5.32'
+    junitVersion        = '5.9.0'
+    kotlin_version      = '1.6.21'
 }
 
 repositories {
@@ -69,9 +69,9 @@ jar {
 
 dependencies {
     api platform('com.exactpro.th2:bom:3.2.0')
-    implementation 'com.exactpro.th2:common:3.39.0-TH2-3574-2454918835-SNAPSHOT'
-    implementation 'com.exactpro.th2:codec:4.8.0-TH2-3340-2450163470-SNAPSHOT'
-    implementation 'com.exactpro.th2:sailfish-utils:3.12.3-logging-fix-2450269933-SNAPSHOT'
+    implementation 'com.exactpro.th2:common:3.40.0'
+    implementation 'com.exactpro.th2:codec:4.8.0-TH2-3340-2970824137-SNAPSHOT'
+    implementation 'com.exactpro.th2:sailfish-utils:3.12.4'
 
     implementation "com.exactpro.sf:sailfish-core:${sailfishVersion}"
 

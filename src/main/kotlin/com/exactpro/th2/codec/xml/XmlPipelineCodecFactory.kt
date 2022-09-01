@@ -30,6 +30,7 @@ class XmlPipelineCodecFactory : IPipelineCodecFactory {
     private lateinit var dictionary: IDictionaryStructure
 
     override val settingsClass: Class<out IPipelineCodecSettings> = XmlPipelineCodecSettings::class.java
+    @Deprecated("Please migrate to the protocols property")
     override val protocol: String = PROTOCOL
 
     override fun init(dictionary: InputStream) {
