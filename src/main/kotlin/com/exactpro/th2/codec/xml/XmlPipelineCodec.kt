@@ -206,7 +206,6 @@ open class XmlPipelineCodec(dictionary: IDictionaryStructure) : IPipelineCodec {
             metadataBuilder.putAllProperties(message.metadata.propertiesMap)
             metadataBuilder.protocol = PROTOCOL
             metadataBuilder.id = message.metadata.id
-            metadataBuilder.timestamp = message.metadata.timestamp
             body = output.toByteString()
         }.build()
     }
@@ -254,7 +253,6 @@ open class XmlPipelineCodec(dictionary: IDictionaryStructure) : IPipelineCodec {
                             builder.metadataBuilder.also { msgMetadata ->
                                 rawMessage.metadata.also { rawMetadata ->
                                     msgMetadata.id = rawMetadata.id
-                                    msgMetadata.timestamp = rawMetadata.timestamp
                                     msgMetadata.protocol = PROTOCOL
                                     msgMetadata.putAllProperties(rawMetadata.propertiesMap)
                                 }
