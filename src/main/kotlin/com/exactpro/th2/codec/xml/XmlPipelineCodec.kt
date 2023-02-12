@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2021 Exactpro (Exactpro Systems Limited)
+ * Copyright 2021-2023 Exactpro (Exactpro Systems Limited)
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -23,6 +23,7 @@ import com.exactpro.th2.codec.CodecException
 import com.exactpro.th2.codec.DecodeException
 import com.exactpro.th2.codec.api.IPipelineCodec
 import com.exactpro.th2.codec.api.IPipelineCodecSettings
+import com.exactpro.th2.codec.xml.XmlPipelineCodecFactory.Companion.PROTOCOL
 import com.exactpro.th2.common.grpc.AnyMessage
 import com.exactpro.th2.common.grpc.ListValue
 import com.exactpro.th2.common.grpc.Message
@@ -59,9 +60,8 @@ import javax.xml.transform.stream.StreamResult
 import javax.xml.xpath.XPath
 import javax.xml.xpath.XPathFactory
 
-open class XmlPipelineCodec : IPipelineCodec {
+open class XmlPipelineCodec(dictionary: IDictionaryStructure) : IPipelineCodec {
 
-    override val protocol: String = "XML"
     private var messagesTypes: Map<String, IMessageStructure> = emptyMap()
     private var xmlCharset: Charset = Charsets.UTF_8
     private var documentTypePublic: Boolean? = null
@@ -69,7 +69,7 @@ open class XmlPipelineCodec : IPipelineCodec {
     private var documentTypeFormatStringUrl: String? = null
     private var xmlRootTagName: String? = null
 
-    override fun init(dictionary: IDictionaryStructure, settings: IPipelineCodecSettings?) {
+    init {
         dictionary.apply {
             messagesTypes = messages
             val xmlNames = HashSet<String>()
@@ -164,7 +164,7 @@ open class XmlPipelineCodec : IPipelineCodec {
 
         return MessageGroup.newBuilder().addAllMessages(
             messages.map { anyMsg ->
-                if (anyMsg.hasMessage() && anyMsg.message.metadata.protocol.let { msgProtocol -> msgProtocol.isNullOrEmpty() || msgProtocol == this.protocol })
+                if (anyMsg.hasMessage() && anyMsg.message.metadata.protocol.let { msgProtocol -> msgProtocol.isNullOrEmpty() || msgProtocol == PROTOCOL })
                     AnyMessage.newBuilder().setRawMessage(encodeOne(anyMsg.message)).build()
                 else anyMsg
             }
@@ -204,7 +204,7 @@ open class XmlPipelineCodec : IPipelineCodec {
         return RawMessage.newBuilder().apply {
             parentEventId = message.parentEventId
             metadataBuilder.putAllProperties(message.metadata.propertiesMap)
-            metadataBuilder.protocol = protocol
+            metadataBuilder.protocol = PROTOCOL
             metadataBuilder.id = message.metadata.id
             metadataBuilder.timestamp = message.metadata.timestamp
             body = output.toByteString()
@@ -255,7 +255,7 @@ open class XmlPipelineCodec : IPipelineCodec {
                                 rawMessage.metadata.also { rawMetadata ->
                                     msgMetadata.id = rawMetadata.id
                                     msgMetadata.timestamp = rawMetadata.timestamp
-                                    msgMetadata.protocol = protocol
+                                    msgMetadata.protocol = PROTOCOL
                                     msgMetadata.putAllProperties(rawMetadata.propertiesMap)
                                 }
                             }
