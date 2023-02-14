@@ -3,8 +3,8 @@
 ## Release notes
 
 ### 0.2.0
-+ th2-codec upgrade to `4.7.5`
-+ sailfish upgrade to `3.3+`
++ th2-codec upgrade to `4.7.6`
++ sailfish upgrade to `3.3.54`
 + th2-common upgrade to `3.44.0`
 + th2-bom upgrade to `4.1.0`
 
