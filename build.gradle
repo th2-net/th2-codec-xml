@@ -16,6 +16,7 @@
 plugins {
     id 'com.palantir.docker' version '0.25.0'
     id 'org.jetbrains.kotlin.jvm' version "1.6.21"
+    id 'org.jetbrains.kotlin.kapt' version "1.6.21"
     id 'application'
 }
 
@@ -110,7 +111,7 @@ dependencies {
     api platform('com.exactpro.th2:bom:4.1.0')
     implementation 'com.exactpro.th2:common:5.1.0-dev-version-5+'
     implementation 'com.exactpro.th2:codec:5.0.0-dev-version-5+'
-    implementation 'com.exactpro.th2:sailfish-utils:3.14.0'
+    implementation "com.exactpro.sf:sailfish-common:$sailfishVersion"
 
     implementation "com.exactpro.sf:sailfish-core:${sailfishVersion}"
 
@@ -118,6 +119,7 @@ dependencies {
 
     compileOnly 'com.google.auto.service:auto-service:1.0.1'
     annotationProcessor 'com.google.auto.service:auto-service:1.0.1'
+    kapt 'com.google.auto.service:auto-service:1.0.1'
 
     implementation "org.apache.commons:commons-lang3"
     implementation "org.apache.commons:commons-collections4:4.4"
