@@ -39,7 +39,7 @@ class XmlPipelineCodecTest {
     @Test
     fun `test wrong dictionary`() {
         try {
-            XmlPipelineCodec().init(
+            XmlPipelineCodec(
                 XmlDictionaryStructureLoader().load(
                     Thread.currentThread().contextClassLoader.getResourceAsStream(
                         "test_wrong_dictionary.xml"
@@ -408,13 +408,9 @@ class XmlPipelineCodecTest {
         .build()
 
     companion object {
-        val codec = XmlPipelineCodec()
         val dictionary: IDictionaryStructure =
             XmlDictionaryStructureLoader().load(Thread.currentThread().contextClassLoader.getResourceAsStream("test_dictionary.xml"))
-
-        init {
-            codec.init(dictionary, null)
-        }
+        val codec = XmlPipelineCodec(dictionary)
 
         val EMBEDDED_XML = """
             <TestEmbedded>
